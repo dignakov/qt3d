@@ -374,6 +374,7 @@ private:
     GenericLambdaJobPtr<std::function<void ()>> m_textureGathererJob;
     GenericLambdaJobPtr<std::function<void ()>> m_sendTextureChangesToFrontendJob;
     IntrospectShadersJobPtr m_introspectShaderJob;
+    GenericLambdaJobPtr<std::function<void ()>> m_updateVRDevicesJob;
 
     SynchronizerJobPtr m_syncTextureLoadingJob;
 
@@ -383,6 +384,7 @@ private:
     void lookForDirtyTextures();
     void reloadDirtyShaders();
     void sendTextureChangesToFrontend();
+    void updateVRDevices();
 
     QMutex m_abandonedVaosMutex;
     QVector<HVao> m_abandonedVaos;

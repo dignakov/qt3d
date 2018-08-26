@@ -241,6 +241,7 @@ RenderView::RenderView()
     , m_compute(false)
     , m_frustumCulling(false)
     , m_memoryBarrier(QMemoryBarrier::None)
+    , m_submitVR(false)
     , m_environmentLight(nullptr)
 {
     m_workGroups[0] = 1;

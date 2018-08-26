@@ -85,6 +85,7 @@
 #include <Qt3DRender/private/armature_p.h>
 #include <Qt3DRender/private/skeleton_p.h>
 #include <Qt3DRender/private/joint_p.h>
+#include <Qt3DRender/private/openvrdevice_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -432,6 +433,15 @@ public:
 
 private:
     QVector<HJoint> m_dirtyJoints;
+};
+
+class OpenVRDeviceManager : public Qt3DCore::QResourceManager<
+        OpenVRDevice,
+        Qt3DCore::QNodeId,
+        Qt3DCore::NonLockingPolicy>
+{
+public:
+    OpenVRDeviceManager() {}
 };
 
 } // namespace Render

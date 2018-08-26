@@ -196,6 +196,7 @@ Renderer::Renderer(QRenderAspect::RenderType type)
     , m_textureGathererJob(Render::GenericLambdaJobPtr<std::function<void ()>>::create([this] { lookForDirtyTextures(); }, JobTypes::DirtyTextureGathering))
     , m_sendTextureChangesToFrontendJob(Render::GenericLambdaJobPtr<std::function<void ()>>::create([this] { sendTextureChangesToFrontend(); }, JobTypes::SendTextureChangesToFrontend))
     , m_introspectShaderJob(Render::GenericLambdaJobPtr<std::function<void ()>>::create([this] { reloadDirtyShaders(); }, JobTypes::DirtyShaderGathering))
+    , m_updateVRDevicesJob(Render::GenericLambdaJobPtr<std::function<void ()>>::create([this] { updateVRDevices(); }))
     , m_syncTextureLoadingJob(Render::GenericLambdaJobPtr<std::function<void ()>>::create([] {}, JobTypes::SyncTextureLoading))
     , m_ownedContext(false)
     , m_offscreenHelper(nullptr)
@@ -1193,6 +1194,16 @@ void Renderer::sendTextureChangesToFrontend()
     }
 }
 
+void Renderer::updateVRDevices()
+{
+    const QVector<HOpenVRDevice> activeVRDevices = m_nodesManager->openVRDeviceManager()->activeHandles();
+    for (const HOpenVRDevice handle : activeVRDevices) {
+        OpenVRDevice *vrDevice = m_nodesManager->openVRDeviceManager()->data(handle);
+        vrDevice->updatePoses();
+    }
+}
+
+
 // Render Thread (or QtQuick RenderThread when using Scene3D)
 // Scene3D: When using Scene3D rendering, we can't assume that when
 // updateGLResources is called, the resource handles points to still existing
@@ -1562,6 +1573,27 @@ Renderer::ViewSubmissionResultData Renderer::submitRenderViews(const QVector<Ren
                                                  interpolationMethod);
         }
 
+        // OpenVR submission
+        if (renderView->shouldSubmitVR()) {
+            const Qt3DCore::QNodeId deviceId = renderView->vrDeviceId();
+            OpenVRDevice *vrDevice = m_nodesManager->openVRDeviceManager()->lookupResource(deviceId);
+            if (vrDevice != nullptr) {
+                if (!vrDevice->isVRInitialized())
+                    vrDevice->initializeVR();
+                if (vrDevice->isVRInitialized()) {
+                    GLTexture *leftTexture = m_nodesManager->glTextureManager()->lookupResource(vrDevice->leftEyeTextureId());
+                    GLTexture *rightTexture = m_nodesManager->glTextureManager()->lookupResource(vrDevice->rightEyeTextureId());
+                    if (leftTexture != nullptr && rightTexture != nullptr) {
+                        QOpenGLTexture *glLeftTexture = leftTexture->getGLTexture();
+                        QOpenGLTexture *glRightTexture = rightTexture->getGLTexture();
+                        if (glLeftTexture != nullptr && glRightTexture != nullptr) {
+//                            qDebug() << "Valid Left and Right Textures" << glLeftTexture->textureId() << glRightTexture->textureId();
+                            vrDevice->submitVR(glLeftTexture->textureId(), glRightTexture->textureId());
+                        }
+                    }
+                }
+            }
+        }
 
         frameElapsed = timer.elapsed() - frameElapsed;
         qCDebug(Rendering) << Q_FUNC_INFO << "Submitted Renderview " << i + 1 << "/" << renderViewsCount  << "in " << frameElapsed << "ms";
@@ -1705,6 +1737,7 @@ QVector<Qt3DCore::QAspectJobPtr> Renderer::renderBinJobs()
 
     // Jobs to prepare GL Resource upload
     renderBinJobs.push_back(m_vaoGathererJob);
+    renderBinJobs.push_back(m_updateVRDevicesJob);
 
     if (dirtyBitsForFrame & AbstractRenderer::BuffersDirty)
         renderBinJobs.push_back(m_bufferGathererJob);

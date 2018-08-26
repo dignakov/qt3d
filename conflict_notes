@@ -1,0 +1,89 @@
+qt3d.pro:
+	ignored the extras from vr branch, and only added openvr to the end
+
+qt3dquick3drenderplugin.cpp:
+	merged with no manual changes
+
+
+render.pro:
+	adding:
+		include (openvr/openvr.pri)
+	ignoring:
+		include (graphicshelpers/graphicshelpers.pri)
+
+		also ignoring the mingw thing
+
+handle_types_p.h:
+	adding:
+
+	ignoring:
+		class QMatrix4x4; - assuming this is included in the new Qt3DCore stuff,
+		may need to change QMatrix4v4 --> Matrix4x4
+	changes:
+		<OpenVRDevice, 16>HOpenVRDevice --> <OpenVRDevice> --- make sure this is correct
+
+managers_p.h:
+	changes:
+		THIS WILL PROBABLY MEAN CHANGES TO OpenVRDeviceManager elsewhere !!!
+		--> look at QResourceManager type . . .does it need an ArrayAllocationgPolicy?
+		--> will have to look at the allocation policy, but I think that's handled internally now
+		class OpenVRDeviceManager : public Qt3DCore::QResourceManager<
+			OpenVRDevice,
+			Qt3DCore::QNodeId,
+			16, <----------------------------------- removed
+			Qt3DCore::ArrayAllocatingPolicy> <------ removed
+		{
+		public:
+		    OpenVRDeviceManager() {}
+		};
+
+nodemanagers.cpp:
+	changes: added Q_DECL_NOTHROW to OpenVRDeviceManager
+
+nodemanagers_p.h
+	merged with no manual changes
+
+framegraphnode_p.h:
+	merged with no manual changes
+
+qrenderasoect.cpp:
+	merged with no manual changes
+
+renderviewjobutils.cpp:
+	merged with no manual changes
+	there could be something under the OpenVRSubmit:{ case...
+
+
+renderer.cpp:
+	- keeping m_submissionContext(nullptr) --> it seemsm to have replaced m_graphicsContext
+	- disregarding m_changeSet(0) --> this is now m_dirtyBits.marked
+	- discarding m_shaderGatherJob <-- seems to be from an older version of this
+	- disregarding m_calculateBoundingVolumeJob
+	- disregard m_sendBufferCaptureJob
+
+	- double check that the VR stuff does not use depricated parts
+
+renderer_p.h:
+	- keeping new "class SubmissionContext"
+	- discarding m_shaderGatherJob...
+
+to loook at for conf.:
+openvrdevice.h
+openvrdevice_p.h
+openvrsubmitcommand.h
+openvrsubmitcommand_p.h
+qopenvrdevice.h
+qopenvrsubmitcommand.h
+
+HEADERS += \
+    $$PWD/qopenvrdevice.h \
+    $$PWD/openvrdevice_p.h \
+    $$PWD/qopenvrsubmitcommand.h \
+    $$PWD/openvrsubmitcommand_p.h
+
+SOURCES += \
+    $$PWD/qopenvrdevice.cpp \
+    $$PWD/openvrdevice.cpp \
+    $$PWD/qopenvrsubmitcommand.cpp \
+    $$PWD/openvrsubmitcommand.cpp
+

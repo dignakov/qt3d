@@ -112,6 +112,8 @@
 #include <Qt3DRender/qviewport.h>
 #include <Qt3DRender/qproximityfilter.h>
 #include <Qt3DRender/qblitframebuffer.h>
+#include <Qt3DRender/qopenvrdevice.h>
+#include <Qt3DRender/qopenvrsubmitcommand.h>
 
 #include <QtGui/qwindow.h>
 
@@ -296,6 +298,10 @@ void Qt3DQuick3DRenderPlugin::registerTypes(const char *uri)
     qmlRegisterType<Qt3DRender::QStencilOperation>(uri, 2, 0, "StencilOperation");
     qmlRegisterType<Qt3DRender::QStencilMask>(uri, 2, 0, "StencilMask");
     qmlRegisterType<Qt3DRender::QLineWidth>(uri, 2, 10, "LineWidth");
+
+    // OpenVR
+    qmlRegisterType<Qt3DRender::QOpenVRDevice>(uri, 2, 2, "OpenVRDevice");
+    qmlRegisterType<Qt3DRender::QOpenVRSubmitCommand>(uri, 2, 2, "OpenVRSubmitCommand");
 }
 
 QT_END_NAMESPACE

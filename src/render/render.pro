@@ -19,6 +19,7 @@ include (raycasting/raycasting.pri)
 include (services/services.pri)
 include (texture/texture.pri)
 include (renderers/renderers.pri)
+include (openvr/openvr.pri)
 
 # Qt3D is free of Q_FOREACH - make sure it stays that way:
 DEFINES += QT_NO_FOREACH

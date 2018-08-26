@@ -68,6 +68,7 @@
 #include <Qt3DRender/private/techniquemanager_p.h>
 #include <Qt3DRender/private/memorybarrier_p.h>
 #include <Qt3DRender/private/blitframebuffer_p.h>
+#include <Qt3DRender/private/openvrsubmitcommand_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -269,6 +270,14 @@ void setRenderViewConfigFromFrameGraphLeafNode(RenderView *rv, const FrameGraphN
                 bfbInfo.destinationAttachmentPoint = blitFramebufferNode->destinationAttachmentPoint();
                 bfbInfo.interpolationMethod = blitFramebufferNode->interpolationMethod();
                 rv->setBlitFrameBufferInfo(bfbInfo);
+                break;
+            }
+
+            case FrameGraphNode::OpenVRSubmit: {
+                const Render::OpenVRSubmitCommand *submitCommand = static_cast<const Render::OpenVRSubmitCommand *>(node);
+                rv->setSubmitVR(!submitCommand->deviceId().isNull());
+                rv->setVRDeviceId(submitCommand->deviceId());
+                rv->setNoDraw(true);
                 break;
             }
 

@@ -183,6 +183,12 @@ public:
     inline RenderStateSet *stateSet() const Q_DECL_NOTHROW { return m_stateSet; }
     void setStateSet(RenderStateSet *stateSet) Q_DECL_NOTHROW { m_stateSet = stateSet; }
 
+    inline void setSubmitVR(bool submit) { m_submitVR = submit; }
+    inline bool shouldSubmitVR() const { return m_submitVR; }
+
+    inline void setVRDeviceId(Qt3DCore::QNodeId deviceId) { m_vrDeviceId = deviceId; }
+    inline Qt3DCore::QNodeId vrDeviceId() const { return m_vrDeviceId; }
+
     inline bool noDraw() const Q_DECL_NOTHROW { return m_noDraw; }
     void setNoDraw(bool noDraw) Q_DECL_NOTHROW { m_noDraw = noDraw; }
 
@@ -320,6 +326,8 @@ private:
     bool m_frustumCulling:1;
     int m_workGroups[3];
     QMemoryBarrier::Operations m_memoryBarrier;
+    bool m_submitVR;
+    Qt3DCore::QNodeId m_vrDeviceId;
 
     // We do not use pointers to RenderNodes or Drawable's here so that the
     // render aspect is free to change the drawables on the next frame whilst
