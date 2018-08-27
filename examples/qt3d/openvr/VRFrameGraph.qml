@@ -3,6 +3,8 @@ import Qt3D.Render 2.2
 import Qt3D.Extras 2.0
 import QtQuick 2.0 as QQ2
 
+import openvr.test 2.20
+
 RenderSurfaceSelector {
     id: root
     property alias leftCamera: leftCameraSelector.camera

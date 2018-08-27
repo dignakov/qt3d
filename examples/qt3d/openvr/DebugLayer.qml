@@ -3,6 +3,8 @@ import Qt3D.Render 2.2
 import Qt3D.Input 2.0
 import Qt3D.Extras 2.0
 
+import openvr.test 2.20
+
 Entity {
     id: root
     property vector2d winSize

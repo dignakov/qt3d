@@ -300,8 +300,8 @@ void Qt3DQuick3DRenderPlugin::registerTypes(const char *uri)
     qmlRegisterType<Qt3DRender::QLineWidth>(uri, 2, 10, "LineWidth");
 
     // OpenVR
-    qmlRegisterType<Qt3DRender::QOpenVRDevice>(uri, 2, 2, "OpenVRDevice");
-    qmlRegisterType<Qt3DRender::QOpenVRSubmitCommand>(uri, 2, 2, "OpenVRSubmitCommand");
+    qmlRegisterType<Qt3DRender::QOpenVRDevice>(uri, 2, 0, "OpenVRDevice");
+    qmlRegisterType<Qt3DRender::QOpenVRSubmitCommand>(uri, 2, 0, "OpenVRSubmitCommand");
 }
 
 QT_END_NAMESPACE

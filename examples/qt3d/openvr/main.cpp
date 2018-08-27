@@ -50,10 +50,17 @@
 
 #include <Qt3DQuickExtras/qt3dquickwindow.h>
 #include <QGuiApplication>
+#include <Qt3DRender/qopenvrdevice.h>
+#include <Qt3DRender/qopenvrsubmitcommand.h>
 
 int main(int argc, char* argv[])
 {
     QGuiApplication app(argc, argv);
+
+    // OpenVR
+    qmlRegisterType<Qt3DRender::QOpenVRDevice>("openvr.test", 2, 20, "OpenVRDevice");
+    qmlRegisterType<Qt3DRender::QOpenVRSubmitCommand>("openvr.test", 2, 20, "OpenVRSubmitCommand");
+
     Qt3DExtras::Quick::Qt3DQuickWindow view;
     view.setSource(QUrl("qrc:/main.qml"));
     view.show();
