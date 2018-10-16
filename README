@@ -3,6 +3,24 @@ This directory contains the Qt3D project for Qt5:
    * Qt3D C++ APIs
 
 
+NOTES
+=================
+Developing on Ubuntu (my version, not ideal):
+
+Add Qt lib directory and added Qt3D directory to LD_LIBRARY_PATH, Qt3D libs must be found first.
+
+e.g.:
+export LD_LIBRARY_PATH=/xxxxxxxx/Qt/5.11.1/gcc_64/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/xxxxxxxx/build-qt3d-Desktop_Qt_5_11_1_GCC_64bit-Debug/lib:$LD_LIBRARY_PATH
+
+Launch OpenVR applications with (github.com/ValveSoftware/SteamVR-for-Linux):
+~/.steam/steam/ubuntu12_32/steam-runtime/run.sh ./my_steamvr_app
+
+e.g.
+cd /xxxxxxxx/build-qt3d-Desktop_Qt_5_11_1_GCC_64bit-Debug/examples/qt3d/openvr
+~/.steam/steam/ubuntu12_32/steam-runtime/run.sh ./openvr
+
+
 Building Qt3D
 ==================
 
