@@ -1,4 +1,4 @@
-#include "qopenvrdevice.h"
+#include "qvrdevice.h"
 #include <Qt3DCore/qpropertyupdatedchange.h>
 #include <Qt3DRender/qabstracttexture.h>
 
@@ -6,73 +6,73 @@ QT_BEGIN_NAMESPACE
 
 namespace Qt3DRender {
 
-QOpenVRDevice::QOpenVRDevice(Qt3DCore::QNode *parent)
+QVRDevice::QVRDevice(Qt3DCore::QNode *parent)
     : Qt3DCore::QNode(parent)
 {
 
 }
 
-QOpenVRDevice::~QOpenVRDevice()
+QVRDevice::~QVRDevice()
 {
 
 }
 
-QAbstractTexture *QOpenVRDevice::leftEyeTexture() const
+QAbstractTexture *QVRDevice::leftEyeTexture() const
 {
     return m_leftEyeTexture;
 }
 
-QAbstractTexture *QOpenVRDevice::rightEyeTexture() const
+QAbstractTexture *QVRDevice::rightEyeTexture() const
 {
     return m_rightEyeTexture;
 }
 
-QMatrix4x4 QOpenVRDevice::leftEyeProjectionMatrix() const
+QMatrix4x4 QVRDevice::leftEyeProjectionMatrix() const
 {
     return m_leftEyeProjectionMatrix;
 }
 
-QMatrix4x4 QOpenVRDevice::rightEyeProjectionMatrix() const
+QMatrix4x4 QVRDevice::rightEyeProjectionMatrix() const
 {
     return m_rightEyeProjectionMatrix;
 }
 
-QMatrix4x4 QOpenVRDevice::leftEyeViewMatrix() const
+QMatrix4x4 QVRDevice::leftEyeViewMatrix() const
 {
     return m_leftEyeViewMatrix;
 }
 
-QMatrix4x4 QOpenVRDevice::rightEyeViewMatrix() const
+QMatrix4x4 QVRDevice::rightEyeViewMatrix() const
 {
     return m_rightEyeViewMatrix;
 }
 
-QMatrix4x4 QOpenVRDevice::headsetPositionMatrix() const
+QMatrix4x4 QVRDevice::headsetPositionMatrix() const
 {
     return m_headsetPositionMatrix;
 }
 
-float QOpenVRDevice::nearPlane() const
+float QVRDevice::nearPlane() const
 {
     return m_nearPlane;
 }
 
-float QOpenVRDevice::farPlane() const
+float QVRDevice::farPlane() const
 {
     return m_farPlane;
 }
 
-QMatrix4x4 QOpenVRDevice::leftEyeHeadsetPositionMatrix() const
+QMatrix4x4 QVRDevice::leftEyeHeadsetPositionMatrix() const
 {
     return m_leftEyeViewMatrix * m_headsetPositionMatrix;
 }
 
-QMatrix4x4 QOpenVRDevice::rightEyeHeadsetPositionMatrix() const
+QMatrix4x4 QVRDevice::rightEyeHeadsetPositionMatrix() const
 {
     return m_rightEyeViewMatrix * m_headsetPositionMatrix;
 }
 
-void QOpenVRDevice::setLeftEyeTexture(QAbstractTexture *leftEyeTexture)
+void QVRDevice::setLeftEyeTexture(QAbstractTexture *leftEyeTexture)
 {
     if (m_leftEyeTexture == leftEyeTexture)
         return;
@@ -81,7 +81,7 @@ void QOpenVRDevice::setLeftEyeTexture(QAbstractTexture *leftEyeTexture)
     emit leftEyeTextureChanged(leftEyeTexture);
 }
 
-void QOpenVRDevice::setRightEyeTexture(QAbstractTexture *rightEyeTexture)
+void QVRDevice::setRightEyeTexture(QAbstractTexture *rightEyeTexture)
 {
     if (m_rightEyeTexture == rightEyeTexture)
         return;
@@ -90,25 +90,26 @@ void QOpenVRDevice::setRightEyeTexture(QAbstractTexture *rightEyeTexture)
     emit rightEyeTextureChanged(rightEyeTexture);
 }
 
-void QOpenVRDevice::setNearPlane(float nearPlane)
+void QVRDevice::setNearPlane(float nearPlane)
 {
-    if (m_nearPlane == nearPlane)
+    //not suitable for gereneral case of very small or very large floats
+    if (std::abs(m_nearPlane - nearPlane)<0.0000001f)
         return;
 
     m_nearPlane = nearPlane;
     emit nearPlaneChanged(nearPlane);
 }
 
-void QOpenVRDevice::setFarPlane(float farPlane)
+void QVRDevice::setFarPlane(float farPlane)
 {
-    if (m_farPlane == farPlane)
+    if (std::abs(m_farPlane - farPlane)<0.0000001f)
         return;
 
     m_farPlane = farPlane;
     emit farPlaneChanged(farPlane);
 }
 
-void QOpenVRDevice::sceneChangeEvent(const Qt3DCore::QSceneChangePtr &change)
+void QVRDevice::sceneChangeEvent(const Qt3DCore::QSceneChangePtr &change)
 {
     Qt3DCore::QPropertyUpdatedChangePtr e = qSharedPointerCast<Qt3DCore::QPropertyUpdatedChange>(change);
     if (e->type() == Qt3DCore::PropertyUpdated) {
@@ -134,10 +135,10 @@ void QOpenVRDevice::sceneChangeEvent(const Qt3DCore::QSceneChangePtr &change)
 //    qDebug() << "---------- LEFT HMD POS " << m_leftEyeViewMatrix.column(3);
 }
 
-Qt3DCore::QNodeCreatedChangeBasePtr QOpenVRDevice::createNodeCreationChange() const
+Qt3DCore::QNodeCreatedChangeBasePtr QVRDevice::createNodeCreationChange() const
 {
-    auto creationChange = Qt3DCore::QNodeCreatedChangePtr<QOpenVRDeviceData>::create(this);
-    QOpenVRDeviceData &data = creationChange->data;
+    auto creationChange = Qt3DCore::QNodeCreatedChangePtr<QVRDeviceData>::create(this);
+    QVRDeviceData &data = creationChange->data;
     data.leftEyeTextureId = Qt3DCore::qIdForNode(m_leftEyeTexture);
     data.rightEyeTextureId = Qt3DCore::qIdForNode(m_rightEyeTexture);
     data.nearPlane = m_nearPlane;

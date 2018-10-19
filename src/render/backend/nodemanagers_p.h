@@ -105,6 +105,7 @@ class ArmatureManager;
 class SkeletonManager;
 class JointManager;
 class OpenVRDeviceManager;
+class VRDeviceManager;
 
 class FrameGraphNode;
 class Entity;
@@ -144,6 +145,7 @@ class Skeleton;
 class Joint;
 class OpenGLVertexArrayObject;
 class OpenVRDevice;
+class VRDevice;
 
 class ResourceAccessor;
 
@@ -228,6 +230,7 @@ public:
     inline SkeletonManager *skeletonManager() const Q_DECL_NOEXCEPT { return m_skeletonManager; }
     inline JointManager *jointManager() const Q_DECL_NOEXCEPT { return m_jointManager; }
     inline OpenVRDeviceManager *openVRDeviceManager() const Q_DECL_NOEXCEPT { return m_openVRDeviceManager; }
+    inline VRDeviceManager *vRDeviceManager() const Q_DECL_NOEXCEPT { return m_VRDeviceManager; }
 
     QSharedPointer<ResourceAccessor> resourceAccessor();
 
@@ -273,6 +276,7 @@ private:
     SkeletonManager *m_skeletonManager;
     JointManager *m_jointManager;
     OpenVRDeviceManager *m_openVRDeviceManager;
+    VRDeviceManager *m_VRDeviceManager;
 
     QSharedPointer<ResourceAccessor> m_resourceAccessor;
 };
@@ -395,6 +399,9 @@ QT3DRENDERSHARED_PRIVATE_EXPORT JointManager *NodeManagers::manager<Joint>() con
 
 template<>
 QT3DRENDERSHARED_PRIVATE_EXPORT OpenVRDeviceManager *NodeManagers::manager<OpenVRDevice>() const Q_DECL_NOEXCEPT;
+
+template<>
+QT3DRENDERSHARED_PRIVATE_EXPORT VRDeviceManager *NodeManagers::manager<VRDevice>() const Q_DECL_NOEXCEPT;
 
 } // Render
 

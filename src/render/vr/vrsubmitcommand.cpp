@@ -1,4 +1,4 @@
-#include "openvrsubmitcommand_p.h"
+#include "vrsubmitcommand_p.h"
 #include <Qt3DCore/qpropertyupdatedchange.h>
 
 QT_BEGIN_NAMESPACE
@@ -7,21 +7,21 @@ namespace Qt3DRender {
 
 namespace Render {
 
-OpenVRSubmitCommand::OpenVRSubmitCommand()
-    : FrameGraphNode(FrameGraphNode::OpenVRSubmit)
+VRSubmitCommand::VRSubmitCommand()
+    : FrameGraphNode(FrameGraphNode::VRSubmit) //NOTE: add to framegraphnode_p.h
 {
 }
 
 
-void OpenVRSubmitCommand::initializeFromPeer(const Qt3DCore::QNodeCreatedChangeBasePtr &change)
+void VRSubmitCommand::initializeFromPeer(const Qt3DCore::QNodeCreatedChangeBasePtr &change)
 {
     FrameGraphNode::initializeFromPeer(change);
-    const auto typedChange = qSharedPointerCast<Qt3DCore::QNodeCreatedChange<QOpenVRSubmitCommandData>>(change);
-    const QOpenVRSubmitCommandData &data = typedChange->data;
+    const auto typedChange = qSharedPointerCast<Qt3DCore::QNodeCreatedChange<QVRSubmitCommandData>>(change);
+    const QVRSubmitCommandData &data = typedChange->data;
     m_deviceId = data.deviceId;
 }
 
-void OpenVRSubmitCommand::sceneChangeEvent(const Qt3DCore::QSceneChangePtr &e)
+void VRSubmitCommand::sceneChangeEvent(const Qt3DCore::QSceneChangePtr &e)
 {
     if (e->type() == Qt3DCore::PropertyUpdated) {
         Qt3DCore::QPropertyUpdatedChangePtr propertyChange = qSharedPointerCast<Qt3DCore::QPropertyUpdatedChange>(e);

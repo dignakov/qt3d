@@ -1,23 +1,23 @@
-#include "qopenvrsubmitcommand.h"
+#include "qvrsubmitcommand.h"
 #include <Qt3DRender/qframegraphnodecreatedchange.h>
-#include <Qt3DRender/qopenvrdevice.h>
+#include <Qt3DRender/qvrdevice.h>
 
 QT_BEGIN_NAMESPACE
 
 namespace Qt3DRender {
 
-QOpenVRSubmitCommand::QOpenVRSubmitCommand(Qt3DCore::QNode *parent)
+QVRSubmitCommand::QVRSubmitCommand(Qt3DCore::QNode *parent)
     : Qt3DRender::QFrameGraphNode(parent)
     , m_device(nullptr)
 {
 }
 
-QOpenVRDevice *QOpenVRSubmitCommand::device() const
+QVRDevice *QVRSubmitCommand::device() const
 {
     return m_device;
 }
 
-void QOpenVRSubmitCommand::setDevice(QOpenVRDevice *device)
+void QVRSubmitCommand::setDevice(QVRDevice *device)
 {
     if (m_device == device)
         return;
@@ -26,10 +26,10 @@ void QOpenVRSubmitCommand::setDevice(QOpenVRDevice *device)
     emit deviceChanged(device);
 }
 
-Qt3DCore::QNodeCreatedChangeBasePtr QOpenVRSubmitCommand::createNodeCreationChange() const
+Qt3DCore::QNodeCreatedChangeBasePtr QVRSubmitCommand::createNodeCreationChange() const
 {
-    auto creationChange = QFrameGraphNodeCreatedChangePtr<QOpenVRSubmitCommandData>::create(this);
-    QOpenVRSubmitCommandData &data = creationChange->data;
+    auto creationChange = QFrameGraphNodeCreatedChangePtr<QVRSubmitCommandData>::create(this);
+    QVRSubmitCommandData &data = creationChange->data;
     data.deviceId = Qt3DCore::qIdForNode(m_device);
     return creationChange;
 }

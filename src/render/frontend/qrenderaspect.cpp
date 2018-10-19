@@ -93,6 +93,8 @@
 #include <Qt3DCore/qskeletonloader.h>
 #include <Qt3DRender/qopenvrdevice.h>
 #include <Qt3DRender/qopenvrsubmitcommand.h>
+#include <Qt3DRender/qvrdevice.h>
+#include <Qt3DRender/qvrsubmitcommand.h>
 
 #include <Qt3DRender/private/cameraselectornode_p.h>
 #include <Qt3DRender/private/layerfilternode_p.h>
@@ -154,6 +156,8 @@
 #include <Qt3DRender/private/proximityfilter_p.h>
 #include <Qt3DRender/private/openvrdevice_p.h>
 #include <Qt3DRender/private/openvrsubmitcommand_p.h>
+#include <Qt3DRender/private/vrdevice_p.h>
+#include <Qt3DRender/private/vrsubmitcommand_p.h>
 
 #include <private/qrenderpluginfactory_p.h>
 #include <private/qrenderplugin_p.h>
@@ -304,6 +308,10 @@ void QRenderAspectPrivate::registerBackendTypes()
     // OpenVR
     q->registerBackendType<QOpenVRDevice>(QSharedPointer<Render::NodeFunctor<Render::OpenVRDevice, Render::OpenVRDeviceManager> >::create(m_renderer));
     q->registerBackendType<QOpenVRSubmitCommand>(QSharedPointer<Render::FrameGraphNodeFunctor<Render::OpenVRSubmitCommand, QOpenVRSubmitCommand> >::create(m_renderer));
+
+    // VR
+    q->registerBackendType<QVRDevice>(QSharedPointer<Render::NodeFunctor<Render::VRDevice, Render::VRDeviceManager> >::create(m_renderer));
+    q->registerBackendType<QVRSubmitCommand>(QSharedPointer<Render::FrameGraphNodeFunctor<Render::VRSubmitCommand, QVRSubmitCommand> >::create(m_renderer));
 
     // Plugins
     for (const QString &plugin : qAsConst(m_pluginConfig))

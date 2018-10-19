@@ -1,5 +1,5 @@
-#ifndef QT3DRENDER_QOPENVRDEVICE_H
-#define QT3DRENDER_QOPENVRDEVICE_H
+#ifndef QT3DRENDER_QVRDEVICE_H
+#define QT3DRENDER_QVRDEVICE_H
 
 #include <Qt3DRender/qt3drender_global.h>
 #include <Qt3DCore/qnode.h>
@@ -11,7 +11,7 @@ namespace Qt3DRender {
 
 class QAbstractTexture;
 
-struct QOpenVRDeviceData
+struct QVRDeviceData
 {
     Qt3DCore::QNodeId leftEyeTextureId;
     Qt3DCore::QNodeId rightEyeTextureId;
@@ -19,7 +19,7 @@ struct QOpenVRDeviceData
     float farPlane;
 };
 
-class QT3DRENDERSHARED_EXPORT QOpenVRDevice : public Qt3DCore::QNode
+class QT3DRENDERSHARED_EXPORT QVRDevice : public Qt3DCore::QNode
 {
     Q_OBJECT
     Q_PROPERTY(Qt3DRender::QAbstractTexture *leftEyeTexture READ leftEyeTexture WRITE setLeftEyeTexture NOTIFY leftEyeTextureChanged)
@@ -33,8 +33,8 @@ class QT3DRENDERSHARED_EXPORT QOpenVRDevice : public Qt3DCore::QNode
     Q_PROPERTY(float nearPlane READ nearPlane WRITE setNearPlane NOTIFY nearPlaneChanged)
     Q_PROPERTY(float farPlane READ farPlane WRITE setFarPlane NOTIFY farPlaneChanged)
 public:
-    explicit QOpenVRDevice(Qt3DCore::QNode *parent = nullptr);
-    ~QOpenVRDevice();
+    explicit QVRDevice(Qt3DCore::QNode *parent = nullptr);
+    ~QVRDevice();
 
     Qt3DRender::QAbstractTexture *leftEyeTexture() const;
     Qt3DRender::QAbstractTexture *rightEyeTexture() const;

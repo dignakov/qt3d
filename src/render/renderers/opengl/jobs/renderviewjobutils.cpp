@@ -69,6 +69,7 @@
 #include <Qt3DRender/private/memorybarrier_p.h>
 #include <Qt3DRender/private/blitframebuffer_p.h>
 #include <Qt3DRender/private/openvrsubmitcommand_p.h>
+#include <Qt3DRender/private/vrsubmitcommand_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -275,6 +276,14 @@ void setRenderViewConfigFromFrameGraphLeafNode(RenderView *rv, const FrameGraphN
 
             case FrameGraphNode::OpenVRSubmit: {
                 const Render::OpenVRSubmitCommand *submitCommand = static_cast<const Render::OpenVRSubmitCommand *>(node);
+                rv->setSubmitVR(!submitCommand->deviceId().isNull());
+                rv->setVRDeviceId(submitCommand->deviceId());
+                rv->setNoDraw(true);
+                break;
+            }
+
+            case FrameGraphNode::VRSubmit: {
+                const Render::VRSubmitCommand *submitCommand = static_cast<const Render::VRSubmitCommand *>(node);
                 rv->setSubmitVR(!submitCommand->deviceId().isNull());
                 rv->setVRDeviceId(submitCommand->deviceId());
                 rv->setNoDraw(true);

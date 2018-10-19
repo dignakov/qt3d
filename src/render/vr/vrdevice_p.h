@@ -1,5 +1,5 @@
-#ifndef QT3DRENDER_RENDER_OPENVRDEVICE_P_H
-#define QT3DRENDER_RENDER_OPENVRDEVICE_P_H
+#ifndef QT3DRENDER_RENDER_VRDEVICE_P_H
+#define QT3DRENDER_RENDER_VRDEVICE_P_H
 
 //
 //  W A R N I N G
@@ -15,24 +15,22 @@
 #include <Qt3DRender/private/backendnode_p.h>
 #include <QtGui/QMatrix4x4>
 
-namespace vr {
-class IVRSystem;
-} // vr
-
 QT_BEGIN_NAMESPACE
 
 namespace Qt3DRender {
 
 namespace Render {
 
-class OpenVRDevice : public BackendNode
+class VRDevice : public BackendNode
 {
 public:
-    OpenVRDevice();
+    VRDevice();
     void sceneChangeEvent(const Qt3DCore::QSceneChangePtr &e) Q_DECL_OVERRIDE;
     void initializeVR();
     void submitVR(uint leftEyeTextureId, uint rightEyeTextureId);
 
+    // QUESTION: Maybe make all motion tracking part of a separate aspect?
+    // Could be useful for using 3rd party motion trackers, or custom ones, or just to experiment.
     // Called from Jobs
     void updatePoses();
 
@@ -49,9 +47,10 @@ private:
     float m_nearPlane = 0.0f;
     float m_farPlane = 0.0f;
     bool m_vrInitialized = false;
-    vr::IVRSystem *m_hMD = nullptr;
-    QMatrix4x4 m_leftEyePosMatrix;
+    void *m_hMD = nullptr; //keeping this here for now, can specialize later...
+    QMatrix4x4 m_leftEyePosMatrix; //would use Pose instead of Pos
     QMatrix4x4 m_rightEyePosMatrix;
+    //QUESTION: Add unerlay and overlay textures here? Would that even be useful? Or is that better for a child class?
 };
 
 

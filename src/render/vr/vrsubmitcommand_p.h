@@ -1,5 +1,5 @@
-#ifndef QT3DRENDER_RENDER_OPENVRSUBMITCOMMAND_H
-#define QT3DRENDER_RENDER_OPENVRSUBMITCOMMAND_H
+#ifndef QT3DRENDER_RENDER_VRSUBMITCOMMAND_H
+#define QT3DRENDER_RENDER_VRSUBMITCOMMAND_H
 
 //
 //  W A R N I N G
@@ -13,7 +13,7 @@
 //
 
 #include <Qt3DRender/private/framegraphnode_p.h>
-#include <Qt3DRender/qopenvrsubmitcommand.h>
+#include <Qt3DRender/qvrsubmitcommand.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -21,10 +21,10 @@ namespace Qt3DRender {
 
 namespace Render {
 
-class OpenVRSubmitCommand : public FrameGraphNode
+class VRSubmitCommand : public FrameGraphNode
 {
 public:
-    OpenVRSubmitCommand();
+    VRSubmitCommand();
 
     void sceneChangeEvent(const Qt3DCore::QSceneChangePtr &e) Q_DECL_OVERRIDE;
     Qt3DCore::QNodeId deviceId() const { return m_deviceId; }

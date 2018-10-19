@@ -114,6 +114,8 @@
 #include <Qt3DRender/qblitframebuffer.h>
 #include <Qt3DRender/qopenvrdevice.h>
 #include <Qt3DRender/qopenvrsubmitcommand.h>
+#include <Qt3DRender/qvrdevice.h>
+#include <Qt3DRender/qvrsubmitcommand.h>
 
 #include <QtGui/qwindow.h>
 
@@ -302,6 +304,10 @@ void Qt3DQuick3DRenderPlugin::registerTypes(const char *uri)
     // OpenVR
     qmlRegisterType<Qt3DRender::QOpenVRDevice>(uri, 2, 0, "OpenVRDevice");
     qmlRegisterType<Qt3DRender::QOpenVRSubmitCommand>(uri, 2, 0, "OpenVRSubmitCommand");
+
+    // VR
+    qmlRegisterType<Qt3DRender::QVRDevice>(uri, 2, 0, "OVRDevice");
+    qmlRegisterType<Qt3DRender::QVRSubmitCommand>(uri, 2, 0, "OVRSubmitCommand");
 }
 
 QT_END_NAMESPACE
