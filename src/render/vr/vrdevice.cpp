@@ -9,25 +9,25 @@ namespace Qt3DRender {
 
 namespace Render {
 
-namespace {
+//namespace {
 
-//inline QMatrix4x4 hmdMatrix4x4ToQMatrix(const vr::HmdMatrix44_t &mVr)
-//{
-//    return QMatrix4x4(mVr.m[0][0], mVr.m[1][0], mVr.m[2][0], mVr.m[3][0],
-//                      mVr.m[0][1], mVr.m[1][1], mVr.m[2][1], mVr.m[3][1],
-//                      mVr.m[0][2], mVr.m[1][2], mVr.m[2][2], mVr.m[3][2],
-//                      mVr.m[0][3], mVr.m[1][3], mVr.m[2][3], mVr.m[3][3]);
-//}
+////inline QMatrix4x4 hmdMatrix4x4ToQMatrix(const vr::HmdMatrix44_t &mVr)
+////{
+////    return QMatrix4x4(mVr.m[0][0], mVr.m[1][0], mVr.m[2][0], mVr.m[3][0],
+////                      mVr.m[0][1], mVr.m[1][1], mVr.m[2][1], mVr.m[3][1],
+////                      mVr.m[0][2], mVr.m[1][2], mVr.m[2][2], mVr.m[3][2],
+////                      mVr.m[0][3], mVr.m[1][3], mVr.m[2][3], mVr.m[3][3]);
+////}
 
-//inline QMatrix4x4 hmdMatrix3x4ToQMatrix(const vr::HmdMatrix34_t &mVr)
-//{
-//    return QMatrix4x4(mVr.m[0][0], mVr.m[1][0], mVr.m[2][0], 0.0f,
-//                      mVr.m[0][1], mVr.m[1][1], mVr.m[2][1], 0.0f,
-//                      mVr.m[0][2], mVr.m[1][2], mVr.m[2][2], 0.0f,
-//                      mVr.m[0][3], mVr.m[1][3], mVr.m[2][3], 1.0f);
-//}
+////inline QMatrix4x4 hmdMatrix3x4ToQMatrix(const vr::HmdMatrix34_t &mVr)
+////{
+////    return QMatrix4x4(mVr.m[0][0], mVr.m[1][0], mVr.m[2][0], 0.0f,
+////                      mVr.m[0][1], mVr.m[1][1], mVr.m[2][1], 0.0f,
+////                      mVr.m[0][2], mVr.m[1][2], mVr.m[2][2], 0.0f,
+////                      mVr.m[0][3], mVr.m[1][3], mVr.m[2][3], 1.0f);
+////}
 
-} // anonymous
+//} // anonymous
 
 VRDevice::VRDevice()
     : BackendNode(ReadWrite)
@@ -70,6 +70,7 @@ void VRDevice::sceneChangeEvent(const Qt3DCore::QSceneChangePtr &e)
 // Called from a Job
 void VRDevice::updatePoses()
 {
+    qDebug() << "[VRDevice::updatePose()] - NOT IMPLEMENTED";
     if (!m_vrInitialized)
         return;
 
@@ -134,14 +135,14 @@ void VRDevice::updatePoses()
 // Called by Render Thread
 void VRDevice::initializeVR()
 {
-    m_vrInitialized = false;
-    qDebug() << "[NOT IMPLEMENTED] VRDevice(intializeVR): Initialization Failed";
+    m_vrInitialized = true;
+    qDebug() << "[VRDevice::intializeVR] - NOT IMPLEMENTED";
 }
 
 // Called by RenderThread
 void VRDevice::submitVR(uint leftEyeTextureId, uint rightEyeTextureId)
 {
-    qDebug() << "[NOT IMPLEMENTED] VRDevice(submitVR): Initialization Failed";
+    qDebug() << "[VRDevice::submitVR] - NOT IMPLEMENTED";
 }
 
 } // Render

@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>SceneEntity.qml</file>
+        <file>VRFrameGraph.qml</file>
+        <file>EyeRenderTarget.qml</file>
+        <file>DebugLayer.qml</file>
+    </qresource>
+</RCC>
