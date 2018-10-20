@@ -230,7 +230,7 @@ public:
     inline SkeletonManager *skeletonManager() const Q_DECL_NOEXCEPT { return m_skeletonManager; }
     inline JointManager *jointManager() const Q_DECL_NOEXCEPT { return m_jointManager; }
     inline OpenVRDeviceManager *openVRDeviceManager() const Q_DECL_NOEXCEPT { return m_openVRDeviceManager; }
-    inline VRDeviceManager *vRDeviceManager() const Q_DECL_NOEXCEPT { return m_VRDeviceManager; }
+    inline VRDeviceManager *vrDeviceManager() const Q_DECL_NOEXCEPT { return m_VRDeviceManager; }
 
     QSharedPointer<ResourceAccessor> resourceAccessor();
 

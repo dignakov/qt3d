@@ -1198,9 +1198,9 @@ void Renderer::sendTextureChangesToFrontend()
 void Renderer::updateVRDevices()
 {
     //WARNING: THIS IS NOW GENERIC. It no longer handles OpenVR, but the generic interface
-    const QVector<HVRDevice> activeVRDevices = m_nodesManager->vRDeviceManager()->activeHandles();
+    const QVector<HVRDevice> activeVRDevices = m_nodesManager->vrDeviceManager()->activeHandles();
     for (const HVRDevice handle : activeVRDevices) {
-        VRDevice *vrDevice = m_nodesManager->vRDeviceManager()->data(handle);
+        VRDevice *vrDevice = m_nodesManager->vrDeviceManager()->data(handle);
         vrDevice->updatePoses();
     }
 }
@@ -1586,7 +1586,7 @@ Renderer::ViewSubmissionResultData Renderer::submitRenderViews(const QVector<Ren
         // WARNING: THIS IS NOW GENERIC. It no longer handles OpenVR submission directly, but VR in general
         if (renderView->shouldSubmitVR()) {
             const Qt3DCore::QNodeId deviceId = renderView->vrDeviceId();
-            VRDevice *vrDevice = m_nodesManager->vRDeviceManager()->lookupResource(deviceId);
+            VRDevice *vrDevice = m_nodesManager->vrDeviceManager()->lookupResource(deviceId);
             if (vrDevice != nullptr) {
                 if (!vrDevice->isVRInitialized())
                     vrDevice->initializeVR();
