@@ -73,6 +73,11 @@ Entity {
         components: [lens, transform]
     }
 
+
+    TestVRDevice{
+        id: testVRDeviceInstance
+    }
+
     VRDevice {
         id: vrDeviceInstance
         nearPlane : 0.1
@@ -92,6 +97,7 @@ Entity {
                 rightCamera: rightEyeCamera
                 leftEyeRenderTarget: leftEyeRenderTarget
                 rightEyeRenderTarget: rightEyeRenderTarget
+//                vrDevice: testVRDeviceInstance
                 vrDevice: vrDeviceInstance
 //                debugLayer: debugLayerEntity.layer
             }

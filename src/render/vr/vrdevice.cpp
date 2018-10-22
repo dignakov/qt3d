@@ -74,6 +74,7 @@ void VRDevice::updatePoses()
     if (!m_vrInitialized)
         return;
 
+    qDebug() << "[VRDevice::updatePose()] - INIT - NOT IMPLEMENTED";
     // TO DO: Retrieve Poses
     int validPoseCount = 0;
 
