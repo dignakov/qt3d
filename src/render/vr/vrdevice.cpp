@@ -36,6 +36,8 @@ VRDevice::VRDevice()
 
 void VRDevice::initializeFromPeer(const Qt3DCore::QNodeCreatedChangeBasePtr &change)
 {
+
+    qDebug() << "[VRDevice::initializeFromPeer()]";
     const auto typedChange = qSharedPointerCast<Qt3DCore::QNodeCreatedChange<QVRDeviceData>>(change);
     const QVRDeviceData &data = typedChange->data;
     m_leftEyeTextureId = data.leftEyeTextureId;

@@ -2,15 +2,15 @@ INCLUDEPATH += $$PWD
 
 HEADERS += \
     $$PWD/qopenvrdevice.h \
-    $$PWD/openvrdevice_p.h \
-    $$PWD/qopenvrsubmitcommand.h \
-    $$PWD/openvrsubmitcommand_p.h
+    $$PWD/openvrdevice_p.h
+#    $$PWD/qopenvrsubmitcommand.h \
+#    $$PWD/openvrsubmitcommand_p.h
 
 SOURCES += \
     $$PWD/qopenvrdevice.cpp \
-    $$PWD/openvrdevice.cpp \
-    $$PWD/qopenvrsubmitcommand.cpp \
-    $$PWD/openvrsubmitcommand.cpp
+    $$PWD/openvrdevice.cpp
+#    $$PWD/qopenvrsubmitcommand.cpp \
+#    $$PWD/openvrsubmitcommand.cpp
 
 
 #TO DO: Make nicer and cross platform

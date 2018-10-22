@@ -74,14 +74,19 @@ Entity {
     }
 
 
-    TestVRDevice{
-        id: testVRDeviceInstance
-    }
 
     VRDevice {
         id: vrDeviceInstance
-        nearPlane : 0.1
-        farPlane : 1000.0
+        nearPlane: 0.1
+        farPlane: 1000.0
+        leftEyeTexture: leftEyeRenderTarget.colorTexture
+        rightEyeTexture: rightEyeRenderTarget.colorTexture
+    }
+
+    OpenVRDevice {
+        id: openVRDeviceInstance
+        nearPlane: 0.1
+        farPlane: 1000.0
         leftEyeTexture: leftEyeRenderTarget.colorTexture
         rightEyeTexture: rightEyeRenderTarget.colorTexture
     }
@@ -97,8 +102,9 @@ Entity {
                 rightCamera: rightEyeCamera
                 leftEyeRenderTarget: leftEyeRenderTarget
                 rightEyeRenderTarget: rightEyeRenderTarget
+//                vrDevice: vrDeviceInstance
+                vrDevice: openVRDeviceInstance
 //                vrDevice: testVRDeviceInstance
-                vrDevice: vrDeviceInstance
 //                debugLayer: debugLayerEntity.layer
             }
         },

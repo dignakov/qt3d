@@ -12,8 +12,9 @@
 // We mean it.
 //
 
-#include <Qt3DRender/private/backendnode_p.h>
-#include <QtGui/QMatrix4x4>
+//#include <Qt3DRender/private/backendnode_p.h>
+//#include <QtGui/QMatrix4x4>
+#include <Qt3DRender/private/vrdevice_p.h>
 
 namespace vr {
 class IVRSystem;
@@ -25,7 +26,7 @@ namespace Qt3DRender {
 
 namespace Render {
 
-class OpenVRDevice : public BackendNode
+class OpenVRDevice : public VRDevice
 {
 public:
     OpenVRDevice();

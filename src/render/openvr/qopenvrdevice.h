@@ -1,9 +1,11 @@
 #ifndef QT3DRENDER_QOPENVRDEVICE_H
 #define QT3DRENDER_QOPENVRDEVICE_H
 
-#include <Qt3DRender/qt3drender_global.h>
-#include <Qt3DCore/qnode.h>
-#include <QMatrix4x4>
+//#include <Qt3DRender/qt3drender_global.h>
+//#include <Qt3DCore/qnode.h>
+//#include <QMatrix4x4>
+
+#include <Qt3DRender/qvrdevice.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -19,7 +21,7 @@ struct QOpenVRDeviceData
     float farPlane;
 };
 
-class QT3DRENDERSHARED_EXPORT QOpenVRDevice : public Qt3DCore::QNode
+class QT3DRENDERSHARED_EXPORT QOpenVRDevice : public Qt3DRender::QVRDevice
 {
     Q_OBJECT
     Q_PROPERTY(Qt3DRender::QAbstractTexture *leftEyeTexture READ leftEyeTexture WRITE setLeftEyeTexture NOTIFY leftEyeTextureChanged)

@@ -305,9 +305,9 @@ void QRenderAspectPrivate::registerBackendTypes()
     q->registerBackendType<QRayCaster>(QSharedPointer<Render::NodeFunctor<Render::RayCaster, Render::RayCasterManager> >::create(m_renderer));
     q->registerBackendType<QScreenRayCaster>(QSharedPointer<Render::NodeFunctor<Render::RayCaster, Render::RayCasterManager> >::create(m_renderer));
 
-    // OpenVR
+    // OpenVR (this should now use the derived class from QVRDevice/VRDevice)
     q->registerBackendType<QOpenVRDevice>(QSharedPointer<Render::NodeFunctor<Render::OpenVRDevice, Render::OpenVRDeviceManager> >::create(m_renderer));
-    q->registerBackendType<QOpenVRSubmitCommand>(QSharedPointer<Render::FrameGraphNodeFunctor<Render::OpenVRSubmitCommand, QOpenVRSubmitCommand> >::create(m_renderer));
+//    q->registerBackendType<QOpenVRSubmitCommand>(QSharedPointer<Render::FrameGraphNodeFunctor<Render::OpenVRSubmitCommand, QOpenVRSubmitCommand> >::create(m_renderer));
 
     // VR
     q->registerBackendType<QVRDevice>(QSharedPointer<Render::NodeFunctor<Render::VRDevice, Render::VRDeviceManager> >::create(m_renderer));

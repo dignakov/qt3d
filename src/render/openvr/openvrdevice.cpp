@@ -30,12 +30,13 @@ inline QMatrix4x4 hmdMatrix3x4ToQMatrix(const vr::HmdMatrix34_t &mVr)
 } // anonymous
 
 OpenVRDevice::OpenVRDevice()
-    : BackendNode(ReadWrite)
+    : VRDevice ()
 {
 }
 
 void OpenVRDevice::initializeFromPeer(const Qt3DCore::QNodeCreatedChangeBasePtr &change)
 {
+    qDebug()<<"[OpenVRDEvice::initializeFromPeer]";
     const auto typedChange = qSharedPointerCast<Qt3DCore::QNodeCreatedChange<QOpenVRDeviceData>>(change);
     const QOpenVRDeviceData &data = typedChange->data;
     m_leftEyeTextureId = data.leftEyeTextureId;
@@ -70,9 +71,11 @@ void OpenVRDevice::sceneChangeEvent(const Qt3DCore::QSceneChangePtr &e)
 // Called from a Job
 void OpenVRDevice::updatePoses()
 {
+    qDebug() << "[OpenVRDevice::updatePoses()]";
     if (!m_vrInitialized)
         return;
 
+    qDebug() << "[OpenVRDevice::updatePoses()] -- INIT";
     // TO DO: Retrieve Poses
     vr::TrackedDevicePose_t trackedDevicePose[vr::k_unMaxTrackedDeviceCount];
     QMatrix4x4 matricesDevicePose[vr::k_unMaxTrackedDeviceCount];
@@ -182,6 +185,7 @@ void OpenVRDevice::updatePoses()
 // Called by Render Thread
 void OpenVRDevice::initializeVR()
 {
+    qDebug() << "[OpenVRDevice::initializeVR()]";
     vr::EVRInitError eError = vr::VRInitError_None;
     m_hMD = vr::VR_Init(&eError, vr::VRApplication_Scene);
     m_vrInitialized = false;
@@ -214,6 +218,7 @@ void OpenVRDevice::initializeVR()
 // Called by RenderThread
 void OpenVRDevice::submitVR(uint leftEyeTextureId, uint rightEyeTextureId)
 {
+    qDebug() << "[OpenVRDevice::submitVR()]";
     vr::Texture_t leftEyeTexture = {(void*)(uintptr_t)leftEyeTextureId,
                                     vr::TextureType_OpenGL,
                                     vr::ColorSpace_Gamma };

@@ -7,7 +7,7 @@ QT_BEGIN_NAMESPACE
 namespace Qt3DRender {
 
 QOpenVRDevice::QOpenVRDevice(Qt3DCore::QNode *parent)
-    : Qt3DCore::QNode(parent)
+    : Qt3DRender::QVRDevice(parent)
 {
 
 }
