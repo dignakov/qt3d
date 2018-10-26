@@ -91,8 +91,6 @@
 #include <Qt3DCore/qarmature.h>
 #include <Qt3DCore/qjoint.h>
 #include <Qt3DCore/qskeletonloader.h>
-#include <Qt3DRender/qopenvrdevice.h>
-#include <Qt3DRender/qopenvrsubmitcommand.h>
 #include <Qt3DRender/qvrdevice.h>
 #include <Qt3DRender/qvrsubmitcommand.h>
 
@@ -154,8 +152,6 @@
 #include <Qt3DRender/private/joint_p.h>
 #include <Qt3DRender/private/loadskeletonjob_p.h>
 #include <Qt3DRender/private/proximityfilter_p.h>
-#include <Qt3DRender/private/openvrdevice_p.h>
-#include <Qt3DRender/private/openvrsubmitcommand_p.h>
 #include <Qt3DRender/private/vrdevice_p.h>
 #include <Qt3DRender/private/vrsubmitcommand_p.h>
 
@@ -304,10 +300,6 @@ void QRenderAspectPrivate::registerBackendTypes()
     q->registerBackendType<QObjectPicker>(QSharedPointer<Render::NodeFunctor<Render::ObjectPicker, Render::ObjectPickerManager> >::create(m_renderer));
     q->registerBackendType<QRayCaster>(QSharedPointer<Render::NodeFunctor<Render::RayCaster, Render::RayCasterManager> >::create(m_renderer));
     q->registerBackendType<QScreenRayCaster>(QSharedPointer<Render::NodeFunctor<Render::RayCaster, Render::RayCasterManager> >::create(m_renderer));
-
-    // OpenVR (this should now use the derived class from QVRDevice/VRDevice)
-    q->registerBackendType<QOpenVRDevice>(QSharedPointer<Render::NodeFunctor<Render::OpenVRDevice, Render::OpenVRDeviceManager> >::create(m_renderer));
-//    q->registerBackendType<QOpenVRSubmitCommand>(QSharedPointer<Render::FrameGraphNodeFunctor<Render::OpenVRSubmitCommand, QOpenVRSubmitCommand> >::create(m_renderer));
 
     // VR
     q->registerBackendType<QVRDevice>(QSharedPointer<Render::NodeFunctor<Render::VRDevice, Render::VRDeviceManager> >::create(m_renderer));

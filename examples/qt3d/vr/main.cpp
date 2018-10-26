@@ -53,13 +53,6 @@
 #include <Qt3DRender/qvrdevice.h>
 #include <Qt3DRender/qvrsubmitcommand.h>
 
-#include <Qt3DRender/qopenvrdevice.h>
-
-#include "testvrdevice_p.h"
-#include "qtestvrdevice.h"
-
-
-
 
 int main(int argc, char* argv[])
 {
@@ -69,11 +62,6 @@ int main(int argc, char* argv[])
     qmlRegisterType<Qt3DRender::QVRDevice>("vr.test", 2, 20, "VRDevice");
     qmlRegisterType<Qt3DRender::QVRSubmitCommand>("vr.test", 2, 20, "VRSubmitCommand");
 
-    //OpenVR still needs to be declared here . . . kind of annoying
-    qmlRegisterType<Qt3DRender::QOpenVRDevice>("vr.test", 2, 20, "OpenVRDevice");
-
-    // TestVR
-    qmlRegisterType<QTestVRDevice>("vr.test", 2, 20, "TestVRDevice");
 
     Qt3DExtras::Quick::Qt3DQuickWindow view;
     view.setSource(QUrl("qrc:/main.qml"));

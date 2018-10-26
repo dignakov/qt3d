@@ -7,9 +7,9 @@ QT += 3dcore 3drender 3dinput 3dquick 3dlogic qml quick 3dquickextras 3dcore-pri
 SOURCES += \
     main.cpp
 
-HEADERS += \
-    testvrdevice_p.h \
-    qtestvrdevice.h
+#HEADERS += \
+#    testvrdevice_p.h \
+#    qtestvrdevice.h
 
 OTHER_FILES += \
     main.qml

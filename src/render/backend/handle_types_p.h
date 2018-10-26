@@ -98,7 +98,6 @@ class RenderStateNode;
 class Armature;
 class Skeleton;
 class Joint;
-class OpenVRDevice;
 class VRDevice;
 
 typedef Qt3DCore::QHandle<RenderTargetOutput> HAttachment;
@@ -138,7 +137,6 @@ typedef Qt3DCore::QHandle<RenderStateNode> HRenderState;
 typedef Qt3DCore::QHandle<Armature> HArmature;
 typedef Qt3DCore::QHandle<Skeleton> HSkeleton;
 typedef Qt3DCore::QHandle<Joint> HJoint;
-typedef Qt3DCore::QHandle<OpenVRDevice> HOpenVRDevice;
 typedef Qt3DCore::QHandle<VRDevice> HVRDevice;
 
 } // namespace Render

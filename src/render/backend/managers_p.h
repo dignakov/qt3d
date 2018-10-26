@@ -85,7 +85,6 @@
 #include <Qt3DRender/private/armature_p.h>
 #include <Qt3DRender/private/skeleton_p.h>
 #include <Qt3DRender/private/joint_p.h>
-#include <Qt3DRender/private/openvrdevice_p.h>
 #include <Qt3DRender/private/vrdevice_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -436,15 +435,6 @@ private:
     QVector<HJoint> m_dirtyJoints;
 };
 
-class OpenVRDeviceManager : public Qt3DCore::QResourceManager<
-        OpenVRDevice,
-        Qt3DCore::QNodeId,
-        Qt3DCore::NonLockingPolicy>
-{
-public:
-    OpenVRDeviceManager() {}
-};
-
 class VRDeviceManager : public Qt3DCore::QResourceManager<
         VRDevice,
         Qt3DCore::QNodeId,
@@ -480,9 +470,9 @@ Q_DECLARE_RESOURCE_INFO(Qt3DRender::Render::Armature, Q_REQUIRES_CLEANUP)
 Q_DECLARE_RESOURCE_INFO(Qt3DRender::Render::Skeleton, Q_REQUIRES_CLEANUP)
 Q_DECLARE_RESOURCE_INFO(Qt3DRender::Render::Joint, Q_REQUIRES_CLEANUP)
 Q_DECLARE_RESOURCE_INFO(Qt3DRender::Render::ShaderBuilder, Q_REQUIRES_CLEANUP)
-//DO I NEED TO ADD
-//Q_DECLARE_RESOURCE_INFO(Qt3DRender::Render::OpenVRDevice, Q_REQUIRES_CLEANUP)
-//???
+// ###QUESTION### DO I NEED TO ADD
+//Q_DECLARE_RESOURCE_INFO(Qt3DRender::Render::VRDevice, Q_REQUIRES_CLEANUP)
+//?
 
 QT_END_NAMESPACE
 

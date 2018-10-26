@@ -103,7 +103,6 @@ public:
         ProximityFilter,
         BlitFramebuffer,
         VRSubmit
-//        OpenVRSubmit,
     };
     FrameGraphNodeType nodeType() const { return m_nodeType; }
 
