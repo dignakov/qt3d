@@ -16,3 +16,7 @@ OTHER_FILES += \
 
 RESOURCES += \
     vr.qrc
+
+DISTFILES += \
+    SceneEntity2.qml
+

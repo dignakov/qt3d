@@ -1,3 +1,5 @@
+//https://www.kdab.com/qt3d-2-0-framegraph/
+
 import Qt3D.Core 2.0
 import Qt3D.Render 2.2
 import Qt3D.Extras 2.0
@@ -19,10 +21,15 @@ RenderSurfaceSelector {
     Viewport {
         normalizedRect: Qt.rect(0, 0, 1, 1)
 
-        //        // Render Scene in Window for debugging
-        //        CameraSelector {
-        //            camera: leftCameraSelector.camera
-        //        }
+
+//                // Render Scene in Window for debugging
+                CameraSelector {
+                    camera: leftCameraSelector.camera
+                    ClearBuffers {
+                        clearColor: Qt.rgba(0.7, 0.0, 0.7, 1.0)
+                        buffers: ClearBuffers.ColorDepthBuffer
+                    }
+                }
 
         // Render Scene seen from Left eye into FBO
         RenderTargetSelector {
@@ -32,7 +39,7 @@ RenderSurfaceSelector {
 
                 ClearBuffers {
                     id: clearBufferLeft
-                    clearColor: Qt.rgba(0.2, 0.2, 0.2, 1.0)
+                    clearColor: Qt.rgba(0.7, 0.0, 0.7, 1.0)
 //                    QQ2.ColorAnimation on clearColor { from: "red"; to: "blue"; duration: 500; loops: QQ2.Animation.Infinite }
                     buffers: ClearBuffers.ColorDepthBuffer
                 }
@@ -58,13 +65,13 @@ RenderSurfaceSelector {
 //            ClearBuffers {
 //                clearColor: "red"
 //                buffers: ClearBuffers.ColorDepthBuffer
-//                //                NoDraw {}
+//                               // NoDraw {}
 ////                CameraSelector {
 ////                    camera: leftCameraSelector.camera
-//                    RenderPassFilter {
-//                        matchAny : FilterKey { name : "pass"; value : "debug" }
-//                    }
-////                }
+////                    RenderPassFilter {
+////                        matchAny : FilterKey { name : "pass"; value : "debug" }
+////                    }
+////                }//camera selector comment
 //            }
 //        }
 

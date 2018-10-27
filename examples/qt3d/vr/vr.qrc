@@ -5,5 +5,7 @@
         <file>VRFrameGraph.qml</file>
         <file>EyeRenderTarget.qml</file>
         <file>DebugLayer.qml</file>
+        <file>TestScene.qml</file>
+        <file>SceneEntity2.qml</file>
     </qresource>
 </RCC>

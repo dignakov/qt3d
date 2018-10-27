@@ -3,24 +3,24 @@ TEMPLATE = subdirs
 SUBDIRS += \
     simple-qml \
     simple-cpp \
-    multiviewport \
-    wireframe \
-    shadow-map-qml \
-    wave \
-    scene3d \
+#    multiviewport \
+#    wireframe \
+#    shadow-map-qml \
+#    wave \
+#    scene3d \
     controls \
-    anaglyph-rendering \
-    planets-qml \
-    instanced-arrays-qml \
-    lights \
-    compute-particles \
-    3d-text \
-    qardboard \
-    advancedcustommaterial \
-    simplecustommaterial \
-    scene2d \
-    phong-cubes \
-    pbr-materials \
+#    anaglyph-rendering \
+#    planets-qml \
+#    instanced-arrays-qml \
+#    lights \
+#    compute-particles \
+#    3d-text \
+#    qardboard \
+#    advancedcustommaterial \
+#    simplecustommaterial \
+#    scene2d \
+#    phong-cubes \
+#    pbr-materials \
     vr
 #    openvr \
 

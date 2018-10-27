@@ -41,7 +41,7 @@ public:
     inline float farPlane() const { return m_farPlane; }
 
 private:
-    void initializeFromPeer(const Qt3DCore::QNodeCreatedChangeBasePtr &change);//Q_DECL_FINAL;
+    void initializeFromPeer(const Qt3DCore::QNodeCreatedChangeBasePtr &change) Q_DECL_FINAL;
     Qt3DCore::QNodeId m_leftEyeTextureId;
     Qt3DCore::QNodeId m_rightEyeTextureId;
     float m_nearPlane = 0.0f;
@@ -50,6 +50,8 @@ private:
     void *m_hMD = nullptr; //keeping this here for now, can specialize later...
     QMatrix4x4 m_leftEyePosMatrix; //would use Pose instead of Pos
     QMatrix4x4 m_rightEyePosMatrix;
+    QMatrix4x4 m_leftEyeProjection; //  = stuff
+    QMatrix4x4 m_rightEyeProjection; //  = stuff
     //QUESTION: Add unerlay and overlay textures here? Would that even be useful? Or is that better for a child class?
 };
 

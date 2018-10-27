@@ -53,6 +53,8 @@ import Qt3D.Render 2.0
 import Qt3D.Input 2.0
 import Qt3D.Extras 2.0
 
+import QtQuick 2.2 as QQ2
+
 //import openvr.test 2.20
 import vr.test 2.20
 
@@ -72,7 +74,6 @@ Entity {
         readonly property Transform transform: Transform { matrix: vrDeviceInstance.rightEyeViewMatrix }
         components: [lens, transform]
     }
-
 
 
     VRDevice {
@@ -102,7 +103,8 @@ Entity {
         InputSettings { }
     ]
 
-    SceneEntity { }
+    SceneEntity2 { }
+//    TestScene { }
 
 //    DebugLayer {
 //        id: debugLayerEntity

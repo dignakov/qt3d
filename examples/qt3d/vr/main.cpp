@@ -62,9 +62,9 @@ int main(int argc, char* argv[])
     qmlRegisterType<Qt3DRender::QVRDevice>("vr.test", 2, 20, "VRDevice");
     qmlRegisterType<Qt3DRender::QVRSubmitCommand>("vr.test", 2, 20, "VRSubmitCommand");
 
-
     Qt3DExtras::Quick::Qt3DQuickWindow view;
     view.setSource(QUrl("qrc:/main.qml"));
+//    view.setSource(QUrl("qrc:/TestScene.qml"));
     view.show();
 
     return app.exec();

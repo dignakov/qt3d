@@ -116,18 +116,23 @@ void QVRDevice::sceneChangeEvent(const Qt3DCore::QSceneChangePtr &change)
         if (e->propertyName() == QByteArrayLiteral("leftEyeProjectionMatrix")) {
             m_leftEyeProjectionMatrix = e->value().value<QMatrix4x4>();
             emit leftEyeProjectionMatrixChanged(m_leftEyeProjectionMatrix);
+            qDebug()<<"getting LEFT projection: " << m_leftEyeProjectionMatrix;
         } else if (e->propertyName() == QByteArrayLiteral("rightEyeProjectionMatrix")) {
             m_rightEyeProjectionMatrix = e->value().value<QMatrix4x4>();
             emit rightEyeProjectionMatrixChanged(m_rightEyeProjectionMatrix);
+            qDebug()<<"getting RIGHT projection: " << m_rightEyeProjectionMatrix;
         } else if (e->propertyName() == QByteArrayLiteral("leftViewMatrix")) {
             m_leftEyeViewMatrix = e->value().value<QMatrix4x4>();
             emit leftEyeViewMatrixChanged();
+            qDebug()<<"getting LEFT view: " << m_leftEyeViewMatrix;
         } else if (e->propertyName() == QByteArrayLiteral("rightViewMatrix")) {
             m_rightEyeViewMatrix = e->value().value<QMatrix4x4>();
             emit rightEyeViewMatrixChanged();
+            qDebug()<<"getting RIGHT view: " << m_rightEyeViewMatrix;
         } else if (e->propertyName() == QByteArrayLiteral("headsetViewMatrix")) {
             m_headsetPositionMatrix = e->value().value<QMatrix4x4>();
-            emit rightEyeViewMatrixChanged();
+            emit rightEyeViewMatrixChanged(); //TODO: this is wrong
+            qDebug()<<"getting HMD pose: " << m_headsetPositionMatrix;
         }
     }
 //    qDebug() << "---------- HMD POS " << m_headsetPositionMatrix.column(3);
@@ -143,6 +148,8 @@ Qt3DCore::QNodeCreatedChangeBasePtr QVRDevice::createNodeCreationChange() const
     data.rightEyeTextureId = Qt3DCore::qIdForNode(m_rightEyeTexture);
     data.nearPlane = m_nearPlane;
     data.farPlane = m_farPlane;
+//    data.leftEyeProjection = m_leftEyeProjectionMatrix;
+//    data.rightEyeProjection = m_rightEyeProjectionMatrix;
     return creationChange;
 }
 

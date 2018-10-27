@@ -82,6 +82,7 @@ void VRDevice::updatePoses()
 
     // FAKE UPDATE hmdPos; // I would use hmdPose **
     QMatrix4x4 hmdPos;
+    hmdPos = QMatrix4x4();
     auto e = Qt3DCore::QPropertyUpdatedChangePtr::create(peerId());
     e->setDeliveryFlags(Qt3DCore::QSceneChange::DeliverToAll);
     e->setPropertyName("headsetViewMatrix");
@@ -99,24 +100,34 @@ void VRDevice::updatePoses()
 //    qDebug() << "---------- LEFT HMD POS " << (hmdPos * m_leftEyePosMatrix).column(3);
 
     // Updating Projection Matrices // should not happen often . . .
-    QMatrix4x4 leftEyeProjection; //  = stuff
-    QMatrix4x4 rightEyeProjection; //  = stuff
+//    QMatrix4x4 leftEyeProjection; //  = stuff
+//    QMatrix4x4 rightEyeProjection; //  = stuff
 
 //    qDebug() << "---------- leftEyeProjection" << leftEyeProjection;
 //    qDebug() << "---------- rightEyeProjection" << rightEyeProjection;
 
+
+    // SHOULD NOT CHANGE TOO OFTEN
+//    m_leftEyeProjection = QMatrix4x4();
+//    m_rightEyeProjection = QMatrix4x4();
+//    m_rightEyeProjection = QMatrix4x4(1.0f,0.0f,0.0f,0.0f,
+//                                     0.0f,1.0f,0.0f,0.0f,
+//                                     0.0f,0.0f,1.0f,0.0f,
+//                                     0.0f,0.0f,0.0f,1.0f);
+//    m_leftEyeProjection.perspective(45.0f, 1.3f, 0.01f, 1000.0f);
+//    m_rightEyeProjection.perspective(65.0f, 1.0f, 0.01f, 1000.0f);
     {
         auto e = Qt3DCore::QPropertyUpdatedChangePtr::create(peerId());
         e->setDeliveryFlags(Qt3DCore::QSceneChange::DeliverToAll);
         e->setPropertyName("leftEyeProjectionMatrix");
-        e->setValue(QVariant::fromValue(leftEyeProjection));
+        e->setValue(QVariant::fromValue(m_leftEyeProjection));
         notifyObservers(e);
     }
     {
         auto e = Qt3DCore::QPropertyUpdatedChangePtr::create(peerId());
         e->setDeliveryFlags(Qt3DCore::QSceneChange::DeliverToAll);
         e->setPropertyName("rightEyeProjectionMatrix");
-        e->setValue(QVariant::fromValue(rightEyeProjection));
+        e->setValue(QVariant::fromValue(m_rightEyeProjection));
         notifyObservers(e);
     }
     {
@@ -138,8 +149,33 @@ void VRDevice::updatePoses()
 // Called by Render Thread
 void VRDevice::initializeVR()
 {
+
+    //set some projection matrix
+    m_leftEyeProjection = QMatrix4x4();
+    m_rightEyeProjection = QMatrix4x4();
+    m_leftEyeProjection.perspective(45.0f, 1.3f, 0.01f, 1000.0f);
+    m_rightEyeProjection.perspective(65.0f, 1.0f, 0.01f, 1000.0f);
+
+    m_leftEyePosMatrix = QMatrix4x4();
+    m_rightEyePosMatrix = QMatrix4x4();
+
+//    {
+//        auto e = Qt3DCore::QPropertyUpdatedChangePtr::create(peerId());
+//        e->setDeliveryFlags(Qt3DCore::QSceneChange::DeliverToAll);
+//        e->setPropertyName("leftEyeProjectionMatrix");
+//        e->setValue(QVariant::fromValue(m_leftEyeProjection));
+//        notifyObservers(e);
+//    }
+//    {
+//        auto e = Qt3DCore::QPropertyUpdatedChangePtr::create(peerId());
+//        e->setDeliveryFlags(Qt3DCore::QSceneChange::DeliverToAll);
+//        e->setPropertyName("rightEyeProjectionMatrix");
+//        e->setValue(QVariant::fromValue(m_rightEyeProjection));
+//        notifyObservers(e);
+//    }
+
     m_vrInitialized = true;
-    qDebug() << "[VRDevice::intializeVR] - NOT IMPLEMENTED";
+    qDebug() << "[VRDevice::intializeVR]";
 }
 
 // Called by RenderThread

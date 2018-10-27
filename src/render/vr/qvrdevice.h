@@ -17,6 +17,8 @@ struct QVRDeviceData
     Qt3DCore::QNodeId rightEyeTextureId;
     float nearPlane;
     float farPlane;
+//    QMatrix4x4 leftEyeProjection;
+//    QMatrix4x4 rightEyeProjection;
 };
 
 class QT3DRENDERSHARED_EXPORT QVRDevice : public Qt3DCore::QNode
