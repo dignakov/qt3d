@@ -164,16 +164,17 @@ void VRDevice::initializeVR()
     m_leftEyeProjection = QMatrix4x4();
     m_rightEyeProjection = QMatrix4x4();
     m_leftEyeProjection.perspective(45.0f, 1.3f, 0.01f, 1000.0f);
-    m_rightEyeProjection.perspective(65.0f, 1.0f, 0.01f, 1000.0f);
+    m_rightEyeProjection.perspective(45.0f, 1.0f, 0.01f, 1000.0f);
 
     m_leftEyePosMatrix = QMatrix4x4();
     m_rightEyePosMatrix = QMatrix4x4();
+    m_headPosMatrix = QMatrix4x4();
 
 
     //initialize plugin
     m_vrinfo.loadLib(m_pluginLocation.toLatin1().data());
     m_vrplugin = m_vrinfo.createVRDevice();
-    m_vrplugin->initializeVR();
+    m_vrplugin->initializeVR(this);
 
 //    {
 //        auto e = Qt3DCore::QPropertyUpdatedChangePtr::create(peerId());
@@ -198,6 +199,26 @@ void VRDevice::submitVR(uint leftEyeTextureId, uint rightEyeTextureId)
 {
     qDebug() << "[VRDevice::submitVR]";
     m_vrplugin->submitVR(leftEyeTextureId, rightEyeTextureId);
+}
+
+void VRDevice::setLeftEyeProjection(QMatrix4x4 mat){
+    m_leftEyeProjection = mat;
+}
+
+void VRDevice::setRightEyeProjection(QMatrix4x4 mat){
+    m_rightEyeProjection = mat;
+}
+
+void VRDevice::setLeftEyePose(QMatrix4x4 mat){
+    m_leftEyePosMatrix = mat;
+}
+
+void VRDevice::setRightEyePose(QMatrix4x4 mat){
+    m_rightEyePosMatrix = mat;
+}
+
+void VRDevice::setHeadPose(QMatrix4x4 mat){
+    m_headPosMatrix= mat;
 }
 
 VRDevice::~VRDevice(){

@@ -37,6 +37,12 @@ public:
     // Called from Jobs
     void updatePoses();
 
+    void setLeftEyeProjection(QMatrix4x4 mat);
+    void setRightEyeProjection(QMatrix4x4 mat);
+    void setLeftEyePose(QMatrix4x4 mat);
+    void setRightEyePose(QMatrix4x4 mat);
+    void setHeadPose(QMatrix4x4 mat);
+
     inline Qt3DCore::QNodeId leftEyeTextureId() const { return m_leftEyeTextureId; }
     inline Qt3DCore::QNodeId rightEyeTextureId() const { return m_rightEyeTextureId; }
     inline bool isVRInitialized() const { return m_vrInitialized; }
