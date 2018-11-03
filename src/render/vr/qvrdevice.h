@@ -17,6 +17,7 @@ struct QVRDeviceData
     Qt3DCore::QNodeId rightEyeTextureId;
     float nearPlane;
     float farPlane;
+    QString pluginLocation;
 //    QMatrix4x4 leftEyeProjection;
 //    QMatrix4x4 rightEyeProjection;
 };
@@ -34,9 +35,14 @@ class QT3DRENDERSHARED_EXPORT QVRDevice : public Qt3DCore::QNode
 
     Q_PROPERTY(float nearPlane READ nearPlane WRITE setNearPlane NOTIFY nearPlaneChanged)
     Q_PROPERTY(float farPlane READ farPlane WRITE setFarPlane NOTIFY farPlaneChanged)
+
+    //pretty sure I can't have this change at runtime, but w/e for now
+//    Q_PROPERTY(QString pluginLocation READ pluginLocation NOTIFY pluginLocationChanged)
+    Q_PROPERTY(QString pluginLocation READ pluginLocation WRITE setPluginLocation NOTIFY pluginLocationChanged)
+
 public:
     explicit QVRDevice(Qt3DCore::QNode *parent = nullptr);
-    ~QVRDevice();
+    ~QVRDevice() override;
 
     Qt3DRender::QAbstractTexture *leftEyeTexture() const;
     Qt3DRender::QAbstractTexture *rightEyeTexture() const;
@@ -55,12 +61,17 @@ public:
     float nearPlane() const;
     float farPlane() const;
 
+    QString pluginLocation() const;
+
+
 public Q_SLOTS:
     void setLeftEyeTexture(Qt3DRender::QAbstractTexture *leftEyeTexture);
     void setRightEyeTexture(Qt3DRender::QAbstractTexture *rightEyeTexture);
 
     void setNearPlane(float nearPlane);
     void setFarPlane(float farPlane);
+
+    void setPluginLocation(QString pluginLocation);
 
 Q_SIGNALS:
     void leftEyeTextureChanged(Qt3DRender::QAbstractTexture *leftEyeTexture);
@@ -75,6 +86,8 @@ Q_SIGNALS:
 
     void nearPlaneChanged(float nearPlane);
     void farPlaneChanged(float farPlane);
+
+    void pluginLocationChanged(QString pluginLocation);
 
 
 protected:
@@ -91,6 +104,8 @@ private:
     QMatrix4x4 m_headsetPositionMatrix;
     float m_nearPlane = 0.0f;
     float m_farPlane = 0.0f;
+
+    QString m_pluginLocation = QStringLiteral("");
 };
 
 } // Qt3DRender

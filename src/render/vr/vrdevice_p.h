@@ -14,6 +14,8 @@
 
 #include <Qt3DRender/private/backendnode_p.h>
 #include <QtGui/QMatrix4x4>
+#include <VRDeviceImplementation/IVRDeviceImplementation.h>
+#include <VRDeviceImplementation/VRPluginInfo.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -25,6 +27,7 @@ class VRDevice : public BackendNode
 {
 public:
     VRDevice();
+    ~VRDevice() override;
     void sceneChangeEvent(const Qt3DCore::QSceneChangePtr &e) Q_DECL_OVERRIDE;
     void initializeVR();
     void submitVR(uint leftEyeTextureId, uint rightEyeTextureId);
@@ -47,11 +50,18 @@ private:
     float m_nearPlane = 0.0f;
     float m_farPlane = 0.0f;
     bool m_vrInitialized = false;
-    void *m_hMD = nullptr; //keeping this here for now, can specialize later...
+//    void *m_hMD = nullptr; //keeping this here for now, can specialize later...
     QMatrix4x4 m_leftEyePosMatrix; //would use Pose instead of Pos
     QMatrix4x4 m_rightEyePosMatrix;
     QMatrix4x4 m_leftEyeProjection; //  = stuff
     QMatrix4x4 m_rightEyeProjection; //  = stuff
+    QMatrix4x4 m_headPosMatrix;
+
+    QString m_pluginLocation;
+    VR::Plugin::VRPluginInfo m_vrinfo;
+    VR::Plugin::IVRDeviceImplementation *m_vrplugin;
+
+
     //QUESTION: Add unerlay and overlay textures here? Would that even be useful? Or is that better for a child class?
 };
 

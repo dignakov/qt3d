@@ -1,0 +1,3 @@
+[submodule "src/render/vr_plugin_interface"]
+	path = src/render/vr_plugin_interface
+	url = git@github.com:EvilPictureBook/qt3d_vr_deviceplugins.git

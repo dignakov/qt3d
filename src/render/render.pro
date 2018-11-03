@@ -21,6 +21,7 @@ include (texture/texture.pri)
 include (renderers/renderers.pri)
 #include (openvr/openvr.pri)
 include (vr/vr.pri)
+include (vr_plugin_interface/vrplugin.pri) # ###QUESTION don't know if this should live in the renderer...
 
 # Qt3D is free of Q_FOREACH - make sure it stays that way:
 DEFINES += QT_NO_FOREACH

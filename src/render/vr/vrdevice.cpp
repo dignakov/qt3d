@@ -44,6 +44,13 @@ void VRDevice::initializeFromPeer(const Qt3DCore::QNodeCreatedChangeBasePtr &cha
     m_rightEyeTextureId = data.rightEyeTextureId;
     m_nearPlane = data.nearPlane;
     m_farPlane = data.farPlane;
+
+    m_pluginLocation = data.pluginLocation;
+
+    //MAKE THIS MAKE SENSE EVENTIALLY
+//    m_plugin_location = "/home/dmitri/Code/hmd2_test/build/libglxplugin_test.so";
+//    m_plugin_location = "/home/dmitri/Code/plugin_test/bin/libmy_plugin.so";
+
 }
 
 void VRDevice::sceneChangeEvent(const Qt3DCore::QSceneChangePtr &e)
@@ -53,16 +60,16 @@ void VRDevice::sceneChangeEvent(const Qt3DCore::QSceneChangePtr &e)
         const auto change = qSharedPointerCast<Qt3DCore::QPropertyUpdatedChange>(e);
         if (change->propertyName() == QByteArrayLiteral("nearPlane")) {
             m_nearPlane = change->value().toFloat();
-            qDebug() << "nearPlane udated" << m_nearPlane;
+            //qDebug() << "nearPlane udated" << m_nearPlane;
         } else if (change->propertyName() == QByteArrayLiteral("farPlane")) {
             m_farPlane = change->value().toFloat();
-            qDebug() << "farPlane udated" << m_farPlane;
+            //qDebug() << "farPlane udated" << m_farPlane;
         } else if (change->propertyName() == QByteArrayLiteral("leftEyeTexture")) {
             m_leftEyeTextureId = change->value().value<Qt3DCore::QNodeId>();
-            qDebug() << "leftEyeTextureId udated" << m_leftEyeTextureId;
+            //qDebug() << "leftEyeTextureId udated" << m_leftEyeTextureId;
         } else if (change->propertyName() == QByteArrayLiteral("rightEyeTexture")) {
             m_rightEyeTextureId = change->value().value<Qt3DCore::QNodeId>();
-            qDebug() << "rightEyeTextureId udated" << m_rightEyeTextureId;
+            //qDebug() << "rightEyeTextureId udated" << m_rightEyeTextureId;
         }
         break;
     }
@@ -72,13 +79,14 @@ void VRDevice::sceneChangeEvent(const Qt3DCore::QSceneChangePtr &e)
 // Called from a Job
 void VRDevice::updatePoses()
 {
-    qDebug() << "[VRDevice::updatePose()] - NOT IMPLEMENTED";
+    qDebug() << "[VRDevice::updatePose() - init: ]"<<m_vrInitialized;
     if (!m_vrInitialized)
         return;
-
-    qDebug() << "[VRDevice::updatePose()] - INIT - NOT IMPLEMENTED";
     // TO DO: Retrieve Poses
-    int validPoseCount = 0;
+//    int validPoseCount = 0;
+
+    //call plugin for updates
+    m_vrplugin->update();
 
     // FAKE UPDATE hmdPos; // I would use hmdPose **
     QMatrix4x4 hmdPos;
@@ -150,6 +158,8 @@ void VRDevice::updatePoses()
 void VRDevice::initializeVR()
 {
 
+    qDebug() << "[VRDevice::intializeVR]";
+
     //set some projection matrix
     m_leftEyeProjection = QMatrix4x4();
     m_rightEyeProjection = QMatrix4x4();
@@ -158,6 +168,12 @@ void VRDevice::initializeVR()
 
     m_leftEyePosMatrix = QMatrix4x4();
     m_rightEyePosMatrix = QMatrix4x4();
+
+
+    //initialize plugin
+    m_vrinfo.loadLib(m_pluginLocation.toLatin1().data());
+    m_vrplugin = m_vrinfo.createVRDevice();
+    m_vrplugin->initializeVR();
 
 //    {
 //        auto e = Qt3DCore::QPropertyUpdatedChangePtr::create(peerId());
@@ -175,13 +191,23 @@ void VRDevice::initializeVR()
 //    }
 
     m_vrInitialized = true;
-    qDebug() << "[VRDevice::intializeVR]";
 }
 
 // Called by RenderThread
 void VRDevice::submitVR(uint leftEyeTextureId, uint rightEyeTextureId)
 {
-    qDebug() << "[VRDevice::submitVR] - NOT IMPLEMENTED";
+    qDebug() << "[VRDevice::submitVR]";
+    m_vrplugin->submitVR(leftEyeTextureId, rightEyeTextureId);
+}
+
+VRDevice::~VRDevice(){
+    if(m_vrInitialized){
+        qDebug() << "[VRDevice::~VRDevice]";
+        m_vrplugin->shutdownVR();
+        m_vrinfo.destroyVRDevice(m_vrplugin);
+        m_vrinfo.unloadLib();
+        m_vrInitialized = false; // becasue the above gets called a bunch...
+    }
 }
 
 } // Render

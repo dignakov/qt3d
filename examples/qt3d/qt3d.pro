@@ -21,10 +21,11 @@ SUBDIRS += \
 #    scene2d \
 #    phong-cubes \
 #    pbr-materials \
-    vr
+    vr \
+    vr_plugin
 #    openvr \
 
-qtHaveModule(multimedia): SUBDIRS += audio-visualizer-qml
+#qtHaveModule(multimedia): SUBDIRS += audio-visualizer-qml
 
 # qmake seems to break in some CI configurations, disable this for now
 #SUBDIRS += qgltf
@@ -32,10 +33,10 @@ qtHaveModule(multimedia): SUBDIRS += audio-visualizer-qml
 # TODO Port the old examples to new APIs
 #SUBDIRS += qt3d
 
-qtHaveModule(widgets) {
-    SUBDIRS += basicshapes-cpp
-    qtHaveModule(quickwidgets): SUBDIRS += widgets-scene3d
-}
+#qtHaveModule(widgets) {
+#    SUBDIRS += basicshapes-cpp
+#    qtHaveModule(quickwidgets): SUBDIRS += widgets-scene3d
+#}
 
 EXAMPLE_FILES += \
     exampleresources
