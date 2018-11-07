@@ -30,12 +30,10 @@ public:
     ~VRDevice() override;
     void sceneChangeEvent(const Qt3DCore::QSceneChangePtr &e) Q_DECL_OVERRIDE;
     void initializeVR();
-    void submitVR(uint leftEyeTextureId, uint rightEyeTextureId);
-
-    // QUESTION: Maybe make all motion tracking part of a separate aspect?
+    void submitVR(uint leftEyeTextureId, uint rightEyeTextureId);  // called from render thread
+    void updatePoses();  // Called from Jobs
+    // ###QUESTION (about above): Maybe make all motion tracking part of a separate aspect?
     // Could be useful for using 3rd party motion trackers, or custom ones, or just to experiment.
-    // Called from Jobs
-    void updatePoses();
 
     void setLeftEyeProjection(QMatrix4x4 mat);
     void setRightEyeProjection(QMatrix4x4 mat);
