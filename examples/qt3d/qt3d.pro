@@ -22,7 +22,8 @@ SUBDIRS += \
 #    phong-cubes \
 #    pbr-materials \
     vr \
-    vr_plugin
+    vr_plugin \
+    openvr_plugin
 #    openvr \
 
 #qtHaveModule(multimedia): SUBDIRS += audio-visualizer-qml
