@@ -4,6 +4,11 @@
 #include <QMatrix4x4>
 #include <VRDeviceImplementation/IVRDeviceImplementation.h>
 
+
+namespace vr {
+class IVRSystem;
+} // vr
+
 class OpenVRDevice : public VR::Plugin::IVRDeviceImplementation
 {
 public:
@@ -29,6 +34,10 @@ private:
     QMatrix4x4 m_hmdPose;
 
     QMatrix4x4 m_default_mat;
+
+    //OpenVR HMD
+    vr::IVRSystem *m_HMD = nullptr;
+
 };
 
 #endif

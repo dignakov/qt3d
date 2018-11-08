@@ -1,29 +1,73 @@
 #include <stdio.h>
 #include "openvr_plugin.h"
+#include <openvr.h>
+
+inline QMatrix4x4 hmdMatrix4x4ToQMatrix(const vr::HmdMatrix44_t &mVr)
+{
+    return QMatrix4x4(mVr.m[0][0], mVr.m[1][0], mVr.m[2][0], mVr.m[3][0],
+                      mVr.m[0][1], mVr.m[1][1], mVr.m[2][1], mVr.m[3][1],
+                      mVr.m[0][2], mVr.m[1][2], mVr.m[2][2], mVr.m[3][2],
+                      mVr.m[0][3], mVr.m[1][3], mVr.m[2][3], mVr.m[3][3]);
+}
+
+inline QMatrix4x4 hmdMatrix3x4ToQMatrix(const vr::HmdMatrix34_t &mVr)
+{
+    return QMatrix4x4(mVr.m[0][0], mVr.m[1][0], mVr.m[2][0], 0.0f,
+                      mVr.m[0][1], mVr.m[1][1], mVr.m[2][1], 0.0f,
+                      mVr.m[0][2], mVr.m[1][2], mVr.m[2][2], 0.0f,
+                      mVr.m[0][3], mVr.m[1][3], mVr.m[2][3], 1.0f);
+}
+
+
 
 //need to call this in the implementation
 VRDEVICE_PLUGIN(OpenVRDevice);
 
 OpenVRDevice::OpenVRDevice(){
-    printf("OpenVR Constructor\n");
+    printf("OpenVR Plugin Constructor\n");
 }
 OpenVRDevice::~OpenVRDevice(){
-    printf("OpenVR Destructor\n");
+    printf("OpenVR  Plugin Destructor\n");
 }
 
 int OpenVRDevice::initializeVR(void* udata){
-    printf("OpenVR Init\n");
+    printf("OpenVR Plugin Init\n");
     m_leftEyeProjection = QMatrix4x4();
     m_rightEyeProjection = QMatrix4x4();
-    m_leftEyeProjection.perspective(90.0f, 1.3f, 0.01f, 1000.0f);
-    m_rightEyeProjection.perspective(90.0f, 1.0f, 0.01f, 1000.0f);
-
-    //just identity for now
     m_leftEyePose = QMatrix4x4();
     m_rightEyePose = QMatrix4x4();
     m_hmdPose = QMatrix4x4();
-
     m_default_mat = QMatrix4x4();
+
+    vr::EVRInitError eError = vr::VRInitError_None;
+    m_HMD = vr::VR_Init(&eError, vr::VRApplication_Scene);
+
+    if (eError != vr::VRInitError_None) {
+        qDebug()<<"OpenVR: could not initialize";
+        return 1;  // some error flag...
+    }
+
+//    //DO I CARE ???
+//    vr::IVRRenderModels *renderModels = static_cast<vr::IVRRenderModels *>(vr::VR_GetGenericInterface(vr::IVRRenderModels_Version, &eError));
+//    if (renderModels == nullptr) {
+//        qDebug() << "OpenVR: Couldn't create renderModels";
+//        vr::VR_Shutdown();
+//        return 2;  // some other error flag...
+//    }
+
+    if (!vr::VRCompositor()) {
+        qDebug() << "OpenVR: Couldn't initialize Compositor";
+        vr::VR_Shutdown();
+        return 2;  // some other error flag...
+    }
+
+    //shoudl have this returnable to crate textures . . .
+    uint32_t recommendedWidth, recommendedHeight;
+    m_HMD->GetRecommendedRenderTargetSize(&recommendedWidth, &recommendedHeight);
+    qDebug() << "-----------------------" << recommendedWidth << recommendedHeight;
+
+
+    //just identity for now
     return 0;
 }
 
