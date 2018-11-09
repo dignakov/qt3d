@@ -25,11 +25,6 @@ Entity {
         translation: Qt.vector3d(0,0,-20)
     }
 
-    Entity {
-        id: torusEntity
-        components: [ torusMesh, material, torusTransform ]
-    }
-
     SphereMesh {
         id: sphereMesh
         radius: 3
@@ -62,4 +57,10 @@ Entity {
         id: sphereEntity
         components: [ sphereMesh, material, sphereTransform ]
     }
+
+    Entity {
+        id: torusEntity
+        components: [ torusMesh, material, torusTransform ]
+    }
+
 }
