@@ -79,7 +79,7 @@ void VRDevice::sceneChangeEvent(const Qt3DCore::QSceneChangePtr &e)
 // Called from a Job
 void VRDevice::updatePoses()
 {
-    qDebug() << "[VRDevice::updatePose() - init: ]"<<m_vrInitialized;
+    qDebug() << "[VRDevice::updatePose()] init: "<<m_vrInitialized;
     if (!m_vrInitialized)
         return;
     // TO DO: Retrieve Poses
@@ -132,20 +132,39 @@ void VRDevice::initializeVR()
 {
 
     qDebug() << "[VRDevice::intializeVR]";
+    m_vrInitialized = false;
 
-    //initialize plugin
-    m_vrinfo.loadLib(m_pluginLocation.toLatin1().data());
-    m_vrplugin = m_vrinfo.createVRDevice();
-    m_vrplugin->initializeVR(this);
+    //load and initialize plugin
+    if(!m_vrinfo.ready){
+        if(m_vrinfo.loadLib(m_pluginLocation.toLatin1().data()) != 0){
+            qDebug()<<"[VRDevice::intializeVR] Could not load plugin";
+            m_vrInitialized = false;
+            return;
+        } //m_vrinfo.ready = true from here on
+    }
+    if(!m_vrinfo.ready){
+        qDebug()<<"[VRDevice::intializeVR] should not be reachable !!!";
+        m_vrInitialized = false;
+        return;
+    }
+    if(m_vrplugin == nullptr){
+        qDebug()<<"[VRDevice::intializeVR] Creating VRDevice";
+        m_vrplugin = m_vrinfo.createVRDevice();  // should only do this once...
+    }
+    if(m_vrplugin->initializeVR() != 0){
+        qDebug()<<"[VRDevice::intializeVR] Could not initialize VRDevice";
+        m_vrInitialized = false;
+        return;
+    }
 
-    //read in values from plugin (overwrite above)
-    //data should be contigous and row major, so this should work
+    //read in values from plugin
     m_leftEyeProjection = m_vrplugin->getEyeProjection(VR::eyeLeft);
     m_rightEyeProjection = m_vrplugin->getEyeProjection(VR::eyeRight);
     m_leftEyePosMatrix = m_vrplugin->getEyePose(VR::eyeLeft);
     m_rightEyePosMatrix = m_vrplugin->getEyePose(VR::eyeRight);
 
     m_vrInitialized = true;
+    qDebug() << "[VRDevice::intializeVR] SUCCESS";
 }
 
 // Called by RenderThread

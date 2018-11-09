@@ -44,10 +44,10 @@ int OpenVRDevice::initializeVR(void* udata){
 
     if (eError != vr::VRInitError_None) {
         qDebug()<<"OpenVR: could not initialize";
-        return 1;  // some error flag...
+        qDebug()<< vr::VR_GetVRInitErrorAsEnglishDescription( eError );
+        return 1;
     }
 
-//    //DO I CARE ???
 //    vr::IVRRenderModels *renderModels = static_cast<vr::IVRRenderModels *>(vr::VR_GetGenericInterface(vr::IVRRenderModels_Version, &eError));
 //    if (renderModels == nullptr) {
 //        qDebug() << "OpenVR: Couldn't create renderModels";
@@ -61,6 +61,22 @@ int OpenVRDevice::initializeVR(void* udata){
         return 2;  // some other error flag...
     }
 
+    //init eye projections
+    // TODO: add near and far planes
+    m_leftEyeProjection = hmdMatrix4x4ToQMatrix(m_HMD->GetProjectionMatrix(vr::Eye_Left, 0.01f, 1000.0f));
+    m_rightEyeProjection = hmdMatrix4x4ToQMatrix(m_HMD->GetProjectionMatrix(vr::Eye_Right, 0.01f, 1000.0f));
+    m_leftEyeProjection = m_leftEyeProjection.transposed();
+    m_rightEyeProjection = m_rightEyeProjection.transposed();
+
+    //init eye poses:
+    m_leftEyePose = hmdMatrix3x4ToQMatrix(m_HMD->GetEyeToHeadTransform(vr::Eye_Left));
+    m_leftEyePose = m_leftEyePose.inverted();
+    m_leftEyePose = m_leftEyePose.transposed();
+
+    m_rightEyePose = hmdMatrix3x4ToQMatrix(m_HMD->GetEyeToHeadTransform(vr::Eye_Right));
+    m_rightEyePose = m_rightEyePose.inverted();
+    m_rightEyePose = m_rightEyePose.transposed();
+
     //shoudl have this returnable to crate textures . . .
     uint32_t recommendedWidth, recommendedHeight;
     m_HMD->GetRecommendedRenderTargetSize(&recommendedWidth, &recommendedHeight);
@@ -73,11 +89,65 @@ int OpenVRDevice::initializeVR(void* udata){
 
 int OpenVRDevice::submitVR(uintmax_t leftEyeTexID, uintmax_t rightEyeTexID, void* udata){
     printf("OpenVR Submit: [%lu,%lu]\n",leftEyeTexID,rightEyeTexID);
+
+    vr::Texture_t leftEyeTexture = {(void*)(uintptr_t)leftEyeTexID,
+                                    vr::TextureType_OpenGL,
+                                    vr::ColorSpace_Gamma };
+    vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
+    vr::Texture_t rightEyeTexture = {(void*)(uintptr_t)rightEyeTexID,
+                                     vr::TextureType_OpenGL,
+                                     vr::ColorSpace_Gamma };
+    vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
+
     return 0;
 }
 
 int OpenVRDevice::updateVR(void* udata){
     printf("OpenVR Update\n");
+
+    //UPDATE ALL THE THINGS
+    vr::TrackedDevicePose_t trackedDevicePose[vr::k_unMaxTrackedDeviceCount];
+    QMatrix4x4 matricesDevicePose[vr::k_unMaxTrackedDeviceCount];
+    int validPoseCount = 0;
+    QString strPoseClasses = "";
+
+    // TO DO: Initialize once
+    char deviceClassChar[vr::k_unMaxTrackedDeviceCount];   // for each device, a character representing its class
+    memset(deviceClassChar, 0, sizeof(deviceClassChar));
+
+    vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
+
+    for (uint nDevice = 0; nDevice < vr::k_unMaxTrackedDeviceCount; ++nDevice) {
+        if (trackedDevicePose[nDevice].bPoseIsValid) {
+            validPoseCount++;
+            matricesDevicePose[nDevice] = hmdMatrix3x4ToQMatrix(trackedDevicePose[nDevice].mDeviceToAbsoluteTracking);
+            if (deviceClassChar[nDevice] == 0) {
+                switch (m_HMD->GetTrackedDeviceClass(nDevice))
+                {
+                case vr::TrackedDeviceClass_Controller:        deviceClassChar[nDevice] = 'C'; break;
+                case vr::TrackedDeviceClass_HMD:               deviceClassChar[nDevice] = 'H'; break;
+                case vr::TrackedDeviceClass_Invalid:           deviceClassChar[nDevice] = 'I'; break;
+                case vr::TrackedDeviceClass_GenericTracker:    deviceClassChar[nDevice] = 'G'; break;
+                case vr::TrackedDeviceClass_TrackingReference: deviceClassChar[nDevice] = 'T'; break;
+                default:                                       deviceClassChar[nDevice] = '?'; break;
+                }
+            }
+            strPoseClasses += deviceClassChar[nDevice];
+        }
+    }
+
+    //update HMD pose
+    if (trackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid) {
+        m_hmdPose = matricesDevicePose[vr::k_unTrackedDeviceIndex_Hmd];
+        m_hmdPose =m_hmdPose.inverted();
+        m_hmdPose =m_hmdPose.transposed();
+        qDebug()<<m_hmdPose;
+    }
+
+    //TODO: update controller pose(s)
+
+
+
     return 0;
 }
 

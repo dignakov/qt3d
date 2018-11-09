@@ -63,7 +63,7 @@ private:
 
     QString m_pluginLocation;
     VR::Plugin::VRPluginInfo m_vrinfo;
-    VR::Plugin::IVRDeviceImplementation *m_vrplugin;
+    VR::Plugin::IVRDeviceImplementation *m_vrplugin = nullptr;
 
 
     //QUESTION: Add unerlay and overlay textures here? Would that even be useful? Or is that better for a child class?
