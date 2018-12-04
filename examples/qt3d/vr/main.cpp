@@ -56,6 +56,10 @@
 
 int main(int argc, char* argv[])
 {
+    QSurfaceFormat f = QSurfaceFormat::defaultFormat();
+    f.setSwapInterval(0);
+    QSurfaceFormat::setDefaultFormat(f);
+
     QGuiApplication app(argc, argv);
 
     // VR

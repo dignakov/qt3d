@@ -153,6 +153,7 @@ int OpenVRDevice::updateVR(void* udata){
 
 int OpenVRDevice::shutdownVR(void* udata){
     printf("OpenVR Shutdown\n");
+    vr::VR_Shutdown();
     return 0;
 }
 
