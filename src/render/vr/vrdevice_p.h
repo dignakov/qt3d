@@ -16,6 +16,7 @@
 #include <QtGui/QMatrix4x4>
 #include <VRDeviceImplementation/IVRDeviceImplementation.h>
 #include <VRDeviceImplementation/VRPluginInfo.h>
+#include <chrono>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,6 +68,10 @@ private:
 
 
     //QUESTION: Add unerlay and overlay textures here? Would that even be useful? Or is that better for a child class?
+    std::chrono::high_resolution_clock::time_point t1_submit, t2_submit, t1_update, t2_update, t1_render, t2_render;
+    int count_submit = 0;
+    int count_render = 0;
+    int count_update = 0;
 };
 
 

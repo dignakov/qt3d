@@ -75,6 +75,78 @@ Entity {
         components: [lens, transform]
     }
 
+    Entity { // PUT ALL HUD STUFF HERE
+        id: hmdHUD
+        readonly property Transform transform: Transform { matrix: vrDeviceInstance.headsetPositionMatrix }
+//        readonly property Transform transform: Transform { matrix: vrDeviceInstance.leftEyeViewMatrix }
+        components: [transform]
+
+
+        PhongMaterial {
+            id: greenMaterial
+            diffuse: "green"
+        }
+        PhongMaterial {
+            id: redMaterial
+            diffuse: "red"
+        }
+        SphereMesh {
+            id: sMesh
+            radius: 0.1
+        }
+        PlaneMesh {
+            id: pMesh
+            height: 0.25
+            width: 0.25
+            meshResolution: Qt.size(2,2)
+        }
+
+        Entity {
+            id: eSphere
+            Transform {
+                id: sTransform
+                translation: Qt.vector3d(0,0,-0.5)
+            }
+//            components: [sMesh, sTransform, greenMaterial]
+        }
+
+        Entity {
+            id: ePlane
+            Transform {
+                id: pTransform
+                rotation: fromAxisAndAngle(Qt.vector3d(1,0,0), 90)
+                translation: Qt.vector3d(-0.5,0.5,-0.5)
+            }
+            components: [pMesh,pTransform,redMaterial]
+
+        }
+
+        //some lights
+
+     Entity {
+            components: [
+                PointLight {
+                    color: "white"
+                    intensity: 0.3
+                    constantAttenuation: 1.0
+                    linearAttenuation: 0.0
+                    quadraticAttenuation: 0.0025
+
+                    QQ2.NumberAnimation on intensity {
+                        from: 0.3; to: 0.8;
+                        running: true
+                        loops: QQ2.Animation.Infinite
+                        duration: 1000
+                        easing.type: Easing.CosineCurve
+                    }
+                },
+                Transform {
+                    translation: Qt.vector3d(0.0, 0.0, 0.0)
+                }
+            ]
+        }
+    }
+
 
     VRDevice {
         id: vrDeviceInstance
@@ -82,8 +154,8 @@ Entity {
         farPlane: 1000.0
         leftEyeTexture: leftEyeRenderTarget.colorTexture
         rightEyeTexture: rightEyeRenderTarget.colorTexture
-        pluginLocation: "/home/dmitri/Code/hmd2_test/build/libvrplugin_test.so"
-//        pluginLocation: "/home/dmitri/Code/build-qt3d-Desktop_Qt_5_11_1_GCC_64bit-Debug/examples/qt3d/openvr_plugin/libopenvr_plugin.so"
+//        pluginLocation: "/home/dmitri/Code/hmd2_test/build/libvrplugin_test.so"
+        pluginLocation: "/home/dmitri/Code/build-qt3d-Desktop_Qt_5_11_1_GCC_64bit-Debug/examples/qt3d/openvr_plugin/libopenvr_plugin.so"
 //        pluginLocation: "/home/dmitri/catkin_ws/devel/.private/vive_tools/lib/libqplugin.so"
 //        pluginLocation: "/home/dmitri/Code/build-qt3d-Desktop_Qt_5_11_1_GCC_64bit-Debug/examples/qt3d/vr_plugin/libvr_plugin.so"
 //        pluginLocation: "libvrplugin_test.so"

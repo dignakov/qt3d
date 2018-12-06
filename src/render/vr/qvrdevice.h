@@ -54,9 +54,9 @@ public:
     QMatrix4x4 headsetPositionMatrix() const;
 
     // Left * Headset
-    QMatrix4x4 leftEyeHeadsetPositionMatrix() const;
+//    QMatrix4x4 leftEyeHeadsetPositionMatrix() const;
     // Right * Headset
-    QMatrix4x4 rightEyeHeadsetPositionMatrix() const;
+//    QMatrix4x4 rightEyeHeadsetPositionMatrix() const;
 
     float nearPlane() const;
     float farPlane() const;

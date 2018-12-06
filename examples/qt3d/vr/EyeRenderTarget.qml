@@ -9,6 +9,10 @@ RenderTarget {
     readonly property Texture2D colorTexture: Texture2D {
         width: 1512
         height: 1680
+//        width: 1080
+//        height: 1200
+//        width: 540
+//        height: 600
         wrapMode {
             x: WrapMode.ClampToEdge
             y: WrapMode.ClampToEdge

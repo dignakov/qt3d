@@ -47,6 +47,14 @@ void VRDevice::initializeFromPeer(const Qt3DCore::QNodeCreatedChangeBasePtr &cha
 
     m_pluginLocation = data.pluginLocation;
 
+
+    t1_submit = std::chrono::high_resolution_clock::now();
+    t2_submit = std::chrono::high_resolution_clock::now();
+    t1_update = std::chrono::high_resolution_clock::now();
+    t2_update = std::chrono::high_resolution_clock::now();
+    t1_render = std::chrono::high_resolution_clock::now();
+    t2_render = std::chrono::high_resolution_clock::now();
+
     //MAKE THIS MAKE SENSE EVENTIALLY
 //    m_plugin_location = "/home/dmitri/Code/hmd2_test/build/libglxplugin_test.so";
 //    m_plugin_location = "/home/dmitri/Code/plugin_test/bin/libmy_plugin.so";
@@ -79,18 +87,23 @@ void VRDevice::sceneChangeEvent(const Qt3DCore::QSceneChangePtr &e)
 // Called from a Job
 void VRDevice::updatePoses()
 {
-    qDebug() << "[VRDevice::updatePose()] init: "<<m_vrInitialized;
+//    qDebug() << "[VRDevice::updatePose()] init: "<<m_vrInitialized;
     if (!m_vrInitialized)
         return;
+    count_update+=1;
+    t1_update = t2_update;
+    t2_update = std::chrono::high_resolution_clock::now();
+    float time_span = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_update - t1_update).count()/1000000000.0;
+    printf("[VRDevice::updatePose(%d)]: dt: %0.2f\n",count_update, time_span*1000);
     // TO DO: Retrieve Poses
 //    int validPoseCount = 0;
 
     //call plugin for updates, calcualtes everything it need to inside
     m_vrplugin->updateVR();
     m_headPosMatrix = m_vrplugin->getHmdPose();
+    qDebug()<<"DEVICE"<<m_headPosMatrix.column(3);
     //TODO: hand tracker poses
 
-    // FAKE UPDATE hmdPos; // I would use hmdPose **
     auto e = Qt3DCore::QPropertyUpdatedChangePtr::create(peerId());
     e->setDeliveryFlags(Qt3DCore::QSceneChange::DeliverToAll);
     e->setPropertyName("headsetViewMatrix");
@@ -115,14 +128,19 @@ void VRDevice::updatePoses()
         auto e = Qt3DCore::QPropertyUpdatedChangePtr::create(peerId());
         e->setDeliveryFlags(Qt3DCore::QSceneChange::DeliverToAll);
         e->setPropertyName("leftViewMatrix");
-        e->setValue(QVariant::fromValue((m_leftEyePosMatrix * m_headPosMatrix)));
+//        e->setValue(QVariant::fromValue((m_leftEyePosMatrix * m_headPosMatrix)));
+        e->setValue(QVariant::fromValue((m_headPosMatrix*m_leftEyePosMatrix)));
+//        qDebug()<<"LHM: " << (m_leftEyePosMatrix*m_headPosMatrix);
+//        qDebug() << m_leftEyePosMatrix;
         notifyObservers(e);
     }
     {
         auto e = Qt3DCore::QPropertyUpdatedChangePtr::create(peerId());
         e->setDeliveryFlags(Qt3DCore::QSceneChange::DeliverToAll);
         e->setPropertyName("rightViewMatrix");
-        e->setValue(QVariant::fromValue((m_rightEyePosMatrix * m_headPosMatrix)));
+//        e->setValue(QVariant::fromValue((m_rightEyePosMatrix * m_headPosMatrix)));
+        e->setValue(QVariant::fromValue(( m_headPosMatrix*m_rightEyePosMatrix)));
+//        qDebug()<<"RHM: " << (m_headPosMatrix * m_rightEyePosMatrix);
         notifyObservers(e);
     }
 }
@@ -170,7 +188,13 @@ void VRDevice::initializeVR()
 // Called by RenderThread
 void VRDevice::submitVR(uint leftEyeTextureId, uint rightEyeTextureId)
 {
-    qDebug() << "[VRDevice::submitVR]";
+//    qDebug() << "[VRDevice::submitVR]";
+
+    count_submit+=1;
+    t1_submit = t2_submit;
+    t2_submit = std::chrono::high_resolution_clock::now();
+    float time_span = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_submit - t1_submit).count()/1000000000.0;
+    printf("[VRDevice::submitVR(%d)]: dt: %0.2f\n",count_submit, time_span*1000);
     m_vrplugin->submitVR(leftEyeTextureId, rightEyeTextureId);
 }
 

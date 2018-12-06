@@ -22,14 +22,14 @@ RenderSurfaceSelector {
         normalizedRect: Qt.rect(0, 0, 1, 1)
 
 
-//                // Render Scene in Window for debugging
-                CameraSelector {
-                    camera: leftCameraSelector.camera
-                    ClearBuffers {
-                        clearColor: Qt.rgba(0.0, 0.7, 0.7, 1.0)
-                        buffers: ClearBuffers.ColorDepthBuffer
-                    }
-                }
+        // Render Scene in Window for debugging
+        CameraSelector {
+            camera: leftCameraSelector.camera
+            ClearBuffers {
+                clearColor: Qt.rgba(0.0, 0.7, 0.7, 1.0)
+                buffers: ClearBuffers.ColorDepthBuffer
+            }
+        }
 
         // Render Scene seen from Left eye into FBO
         RenderTargetSelector {
@@ -39,7 +39,9 @@ RenderSurfaceSelector {
 
                 ClearBuffers {
                     id: clearBufferLeft
-                    clearColor: Qt.rgba(0.7, 0.0, 0.7, 1.0)
+//                    clearColor: Qt.rgba(1.0, 0.0, 0.0, 1.0)
+//                    clearColor: Qt.rgba(0.0, 0.0, 0.0, 0.0)
+                    clearColor: Qt.rgba(0.7, 0.7, 0.7, 1.0)
 //                    QQ2.ColorAnimation on clearColor { from: "red"; to: "blue"; duration: 500; loops: QQ2.Animation.Infinite }
                     buffers: ClearBuffers.ColorDepthBuffer
                 }
@@ -54,6 +56,8 @@ RenderSurfaceSelector {
 
                 ClearBuffers {
                     clearColor: clearBufferLeft.clearColor
+//                    clearColor: Qt.rgba(0.0, 0.0, 1.0, 1.0)
+//                    clearColor: Qt.rgba(0.0, 0.7, 0.7, 1.0)
                     buffers: ClearBuffers.ColorDepthBuffer
                 }
             }

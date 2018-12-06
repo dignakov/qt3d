@@ -3,6 +3,7 @@
 
 #include <QMatrix4x4>
 #include <VRDeviceImplementation/IVRDeviceImplementation.h>
+#include <chrono>
 
 
 namespace vr {
@@ -37,6 +38,9 @@ private:
 
     //OpenVR HMD
     vr::IVRSystem *m_HMD = nullptr;
+    //some timing
+    std::chrono::high_resolution_clock::time_point t1_submit, t2_submit, t1_update, t2_update;
+
 
 };
 

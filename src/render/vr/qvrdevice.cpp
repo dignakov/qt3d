@@ -39,6 +39,7 @@ QMatrix4x4 QVRDevice::rightEyeProjectionMatrix() const
 
 QMatrix4x4 QVRDevice::leftEyeViewMatrix() const
 {
+//    qDebug()<< "QR LHM" << m_leftEyeViewMatrix;
     return m_leftEyeViewMatrix;
 }
 
@@ -67,15 +68,17 @@ QString QVRDevice::pluginLocation() const
     return m_pluginLocation;
 }
 
-QMatrix4x4 QVRDevice::leftEyeHeadsetPositionMatrix() const
-{
-    return m_leftEyeViewMatrix * m_headsetPositionMatrix;
-}
+//QMatrix4x4 QVRDevice::leftEyeHeadsetPositionMatrix() const
+//{
+////    qDebug() << m_leftEyeViewMatrix;
+////    qDebug()<<(m_leftEyeViewMatrix * m_headsetPositionMatrix);
+//    return m_leftEyeViewMatrix * m_headsetPositionMatrix;
+//}
 
-QMatrix4x4 QVRDevice::rightEyeHeadsetPositionMatrix() const
-{
-    return m_rightEyeViewMatrix * m_headsetPositionMatrix;
-}
+//QMatrix4x4 QVRDevice::rightEyeHeadsetPositionMatrix() const
+//{
+//    return m_rightEyeViewMatrix * m_headsetPositionMatrix;
+//}
 
 void QVRDevice::setLeftEyeTexture(QAbstractTexture *leftEyeTexture)
 {
@@ -138,15 +141,17 @@ void QVRDevice::sceneChangeEvent(const Qt3DCore::QSceneChangePtr &change)
         } else if (e->propertyName() == QByteArrayLiteral("leftViewMatrix")) {
             m_leftEyeViewMatrix = e->value().value<QMatrix4x4>();
             emit leftEyeViewMatrixChanged();
-            //qDebug()<<"getting LEFT view: " << m_leftEyeViewMatrix;
+//            qDebug()<<"QTSin LHM: " << m_leftEyeViewMatrix;
         } else if (e->propertyName() == QByteArrayLiteral("rightViewMatrix")) {
             m_rightEyeViewMatrix = e->value().value<QMatrix4x4>();
             emit rightEyeViewMatrixChanged();
             //qDebug()<<"getting RIGHT view: " << m_rightEyeViewMatrix;
         } else if (e->propertyName() == QByteArrayLiteral("headsetViewMatrix")) {
             m_headsetPositionMatrix = e->value().value<QMatrix4x4>();
-            emit rightEyeViewMatrixChanged(); //TODO: this is wrong
-            //qDebug()<<"getting HMD pose: " << m_headsetPositionMatrix;
+//            emit rightEyeViewMatrixChanged(); //TODO: this is wrong
+            emit headsetPositionMatrixChanged();
+//            qDebug()<<"    QT" << m_headsetPositionMatrix.column(3);
+//            qDebug() << ()
         }
     }
 //    qDebug() << "---------- HMD POS " << m_headsetPositionMatrix.column(3);

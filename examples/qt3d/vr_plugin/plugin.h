@@ -4,6 +4,7 @@
 #include <QMatrix4x4>
 #include <Qt3DRender/private/vrdevice_p.h> // don't really want to be including private mats here
 #include <VRDeviceImplementation/IVRDeviceImplementation.h>
+#include <chrono>
 //#include <VRDeviceImplementation/VRPluginTypes.h>
 
 class TestVRDevice : public VR::Plugin::IVRDeviceImplementation
@@ -33,6 +34,9 @@ private:
     QMatrix4x4 m_default_mat;
 
     Qt3DRender::Render::VRDevice *m_parentDevice;
+
+    //some timing
+    std::chrono::high_resolution_clock::time_point t1_submit, t2_submit, t1_update, t2_update;
 };
 
 #endif
