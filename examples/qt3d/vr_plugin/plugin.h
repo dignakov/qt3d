@@ -35,8 +35,10 @@ private:
 
     Qt3DRender::Render::VRDevice *m_parentDevice;
 
+    float utl = 0;
+
     //some timing
-    std::chrono::high_resolution_clock::time_point t1_submit, t2_submit, t1_update, t2_update;
+    std::chrono::high_resolution_clock::time_point t1_submit, t2_submit, t1_update, t2_update, t_utl;
 };
 
 #endif

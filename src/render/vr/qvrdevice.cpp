@@ -150,7 +150,7 @@ void QVRDevice::sceneChangeEvent(const Qt3DCore::QSceneChangePtr &change)
             m_headsetPositionMatrix = e->value().value<QMatrix4x4>();
 //            emit rightEyeViewMatrixChanged(); //TODO: this is wrong
             emit headsetPositionMatrixChanged();
-//            qDebug()<<"    QT" << m_headsetPositionMatrix.column(3);
+            qDebug()<<"    QT" << m_headsetPositionMatrix.column(3);
 //            qDebug() << ()
         }
     }

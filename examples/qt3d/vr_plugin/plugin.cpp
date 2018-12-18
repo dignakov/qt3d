@@ -67,6 +67,7 @@ int TestVRDevice::submitVR(uintmax_t leftEyeTexID, uintmax_t rightEyeTexID, void
     float time_span = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_submit - t1_submit).count()/1000000000.0;
     printf("[PLUGIN] [Qt submitVR]:         - dt: %0.2f\n", time_span*1000);
 
+    usleep(1000000);
 
     return 0;
 }
@@ -74,8 +75,18 @@ int TestVRDevice::submitVR(uintmax_t leftEyeTexID, uintmax_t rightEyeTexID, void
 int TestVRDevice::updateVR(void* udata){
     t1_update = t2_update;
     t2_update = std::chrono::high_resolution_clock::now();
+    t_utl = t2_update;
     float time_span = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_update - t1_update).count()/1000000000.0;
     printf("[PLUGIN] [Qt updateVR]:         - dt: %0.2f\n", time_span*1000);
+    utl += time_span*1000;
+//    float t_ms = std::chrono::duration_cast<std::chrono::nanoseconds>(t_utl)/1000000000.0f;
+//    auto duration = std::chrono::system_clock::now().time_since_epoch();
+//    float t_s = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()/1000.0f;
+    float q = 1.0f*sin(1.0f * utl);
+    qDebug()<<q;
+    m_hmdPose(0,3) = q;
+
+
     return 0;
 }
 
@@ -109,6 +120,7 @@ QMatrix4x4 TestVRDevice::getEyePose(VR::eyeId eye){
 }
 
 QMatrix4x4 TestVRDevice::getHmdPose(){
-    printf("VR getting pose for HMD\n");
+//    printf("VR getting pose for HMD\n");
+    qDebug()<<"PLUGRR" <<m_hmdPose.column(3);
     return m_hmdPose;
 }
