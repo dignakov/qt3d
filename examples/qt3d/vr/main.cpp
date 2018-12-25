@@ -56,9 +56,10 @@
 
 int main(int argc, char* argv[])
 {
-//    QSurfaceFormat f = QSurfaceFormat::defaultFormat();
-//    f.setSwapInterval(0);
-//    QSurfaceFormat::setDefaultFormat(f);
+    QSurfaceFormat f = QSurfaceFormat::defaultFormat();
+    f.setSwapInterval(1);
+    f.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+    QSurfaceFormat::setDefaultFormat(f);
 
     QGuiApplication app(argc, argv);
 
@@ -67,8 +68,8 @@ int main(int argc, char* argv[])
     qmlRegisterType<Qt3DRender::QVRSubmitCommand>("vr.test", 2, 20, "VRSubmitCommand");
 
     Qt3DExtras::Quick::Qt3DQuickWindow view;
+    view.setFormat(f);
     view.setSource(QUrl("qrc:/main.qml"));
-//    view.setSource(QUrl("qrc:/TestScene.qml"));
     view.show();
 
     return app.exec();
