@@ -1,7 +1,8 @@
 #include <stdio.h>
-#include "openvr_plugin.h"
 #include <openvr.h>
 #include <unistd.h>
+
+#include "openvr_plugin.h"
 
 inline QMatrix4x4 hmdMatrix4x4ToQMatrix(const vr::HmdMatrix44_t &mVr)
 {
@@ -22,7 +23,7 @@ inline QMatrix4x4 hmdMatrix3x4ToQMatrix(const vr::HmdMatrix34_t &mVr)
 
 
 //need to call this in the implementation
-VRDEVICE_PLUGIN(OpenVRDevice);
+//VRDEVICE_PLUGIN(OpenVRDevice);
 
 OpenVRDevice::OpenVRDevice(){
     printf("OpenVR Plugin Constructor\n");

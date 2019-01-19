@@ -154,11 +154,9 @@ Entity {
         farPlane: 1000.0
         leftEyeTexture: leftEyeRenderTarget.colorTexture
         rightEyeTexture: rightEyeRenderTarget.colorTexture
-//        pluginLocation: "/home/dmitri/Code/hmd2_test/build/libvrplugin_test.so"
-//        pluginLocation: "/home/dmitri/Code/build-qt3d-Desktop_Qt_5_11_1_GCC_64bit-Debug/examples/qt3d/openvr_plugin/libopenvr_plugin.so"
-//        pluginLocation: "/home/dmitri/catkin_ws/devel/.private/vive_tools/lib/libqplugin.so"
-//        pluginLocation: "/home/dmitri/Code/build-qt3d-Desktop_Qt_5_11_1_GCC_64bit-Debug/examples/qt3d/vr_plugin/libvr_plugin.so"
-        pluginLocation: "/home/dmitri/Code/Qt/build-qt3d-Desktop_Qt_5_11_3_GCC_64bit-Release/examples/qt3d/vr_plugin/libvr_plugin.so"
+//        pluginLocation: "/home/dmitri/Code/VR/qt3d_vr_deviceplugins/build/libqt_vrdevice_test.so"
+//        pluginLocation: "/home/dmitri/Code/Qt/build-qt3d-Desktop_Qt_5_11_3_GCC_64bit-Release/examples/qt3d/vr_plugin/libvr_plugin.so"
+        pluginLocation: "/home/dmitri/Code/Qt/build-qt3d-Desktop_Qt_5_11_3_GCC_64bit-Release/examples/qt3d/openvr_plugin/libopenvr_plugin.so"
 //        pluginLocation: "libvrplugin_test.so"
     }
 

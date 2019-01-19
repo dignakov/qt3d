@@ -15,7 +15,7 @@
 #include <Qt3DRender/private/backendnode_p.h>
 #include <QtGui/QMatrix4x4>
 #include <VRDeviceImplementation/IVRDeviceImplementation.h>
-#include <VRDeviceImplementation/VRPluginInfo.h>
+//#include <VRDeviceImplementation/VRPluginInfo.h>
 #include <chrono>
 
 QT_BEGIN_NAMESPACE
@@ -63,7 +63,8 @@ private:
     QMatrix4x4 m_headPosMatrix;
 
     QString m_pluginLocation;
-    VR::Plugin::VRPluginInfo m_vrinfo;
+    bool m_vrplugin_ready = false;
+//    VR::Plugin::VRPluginInfo m_vrinfo;
     VR::Plugin::IVRDeviceImplementation *m_vrplugin = nullptr;
 
 

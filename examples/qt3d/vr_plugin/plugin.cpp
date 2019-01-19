@@ -1,9 +1,10 @@
 #include <stdio.h>
-#include "plugin.h"
 #include <unistd.h>
 
+#include "plugin.h"
+
 //need to call this in the implementation
-VRDEVICE_PLUGIN(TestVRDevice);
+//VRDEVICE_PLUGIN(TestVRDevice);
 
 TestVRDevice::TestVRDevice(){
     printf("QT - VR Constructor\n");

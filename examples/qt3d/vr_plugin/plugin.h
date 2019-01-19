@@ -1,14 +1,19 @@
 #ifndef VR_PLUGIN_TEST_H
 #define VR_PLUGIN_TEST_H
 
+#include <QObject>
+#include <QtPlugin>
 #include <QMatrix4x4>
-#include <Qt3DRender/private/vrdevice_p.h> // don't really want to be including private mats here
+//#include <Qt3DRender/private/vrdevice_p.h> // don't really want to be including private mats here
 #include <VRDeviceImplementation/IVRDeviceImplementation.h>
 #include <chrono>
-//#include <VRDeviceImplementation/VRPluginTypes.h>
 
-class TestVRDevice : public VR::Plugin::IVRDeviceImplementation
+class TestVRDevice : public QObject, VR::Plugin::IVRDeviceImplementation
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID VRDEVICE_INTERFACE_IID)
+    Q_INTERFACES(VR::Plugin::IVRDeviceImplementation)
+
 public:
     TestVRDevice ();
     ~TestVRDevice ();
@@ -33,7 +38,7 @@ private:
 
     QMatrix4x4 m_default_mat;
 
-    Qt3DRender::Render::VRDevice *m_parentDevice;
+//    Qt3DRender::Render::VRDevice *m_parentDevice;
 
     float utl = 0;
 

@@ -1,6 +1,8 @@
 #ifndef OPENVR_PLUGIN_TEST_H
 #define OPENVR_PLUGIN_TEST_H
 
+#include <QObject>
+#include <QtPlugin>
 #include <QMatrix4x4>
 #include <VRDeviceImplementation/IVRDeviceImplementation.h>
 #include <chrono>
@@ -10,8 +12,12 @@ namespace vr {
 class IVRSystem;
 } // vr
 
-class OpenVRDevice : public VR::Plugin::IVRDeviceImplementation
+class OpenVRDevice : public QObject, VR::Plugin::IVRDeviceImplementation
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID VRDEVICE_INTERFACE_IID)
+    Q_INTERFACES(VR::Plugin::IVRDeviceImplementation)
+
 public:
     OpenVRDevice ();
     ~OpenVRDevice ();

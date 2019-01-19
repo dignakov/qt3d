@@ -1,4 +1,5 @@
 #include "vrdevice_p.h"
+#include <QPluginLoader>
 #include <Qt3DRender/qvrdevice.h>
 #include <Qt3DCore/qpropertyupdatedchange.h>
 //#include <openvr.h>
@@ -145,6 +146,31 @@ void VRDevice::updatePoses()
     }
 }
 
+
+
+/* ### HERE ###
+    if(!QLibrary::isLibrary(PLUGIN_LOC)){
+        printf("COULD NOT LOAD LIBRARY\n");
+        return 1;
+    }
+    QPluginLoader pluginLoader(PLUGIN_LOC);
+    QObject *plugin = pluginLoader.instance();
+
+    if(!plugin){
+        printf("COULD NOT INSTANCIATE PLUGIN\n");
+        return 1;
+    }
+
+    VR::Plugin::IVRDeviceImplementation* vrDevice;
+    vrDevice = qobject_cast<VR::Plugin::IVRDeviceImplementation*>(plugin);
+    if(!vrDevice){
+        printf("INVALID INTERFACE IMPLEMENTED BY PLUGIN \n");
+        return 1;
+    }
+*/
+
+
+
 // Called by Render Thread
 void VRDevice::initializeVR()
 {
@@ -153,21 +179,32 @@ void VRDevice::initializeVR()
     m_vrInitialized = false;
 
     //load and initialize plugin
-    if(!m_vrinfo.ready){
-        if(m_vrinfo.loadLib(m_pluginLocation.toLatin1().data()) != 0){
+    if(!m_vrplugin_ready){
+        if(!QLibrary::isLibrary(m_pluginLocation)){
+            qDebug()<<"[VRDevice::intializeVR] Could not find plugin";
+            m_vrInitialized = false;
+            return;
+        }
+        QPluginLoader pluginLoader(m_pluginLocation);
+        QObject *plugin_tmp = pluginLoader.instance();
+        if(!plugin_tmp){
             qDebug()<<"[VRDevice::intializeVR] Could not load plugin";
             m_vrInitialized = false;
             return;
-        } //m_vrinfo.ready = true from here on
+        }
+
+        m_vrplugin = qobject_cast<VR::Plugin::IVRDeviceImplementation *>(plugin_tmp);
+        if(!m_vrplugin){
+            qDebug()<<"[VRDevice::intializeVR] Could not cast plugin";
+            m_vrInitialized = false;
+            return;
+        }
+        m_vrplugin_ready = true;
     }
-    if(!m_vrinfo.ready){
+    if(!m_vrplugin_ready){
         qDebug()<<"[VRDevice::intializeVR] should not be reachable !!!";
         m_vrInitialized = false;
         return;
-    }
-    if(m_vrplugin == nullptr){
-        qDebug()<<"[VRDevice::intializeVR] Creating VRDevice";
-        m_vrplugin = m_vrinfo.createVRDevice();  // should only do this once...
     }
     if(m_vrplugin->initializeVR() != 0){
         qDebug()<<"[VRDevice::intializeVR] Could not initialize VRDevice";
@@ -222,8 +259,8 @@ VRDevice::~VRDevice(){
     if(m_vrInitialized){
         qDebug() << "[VRDevice::~VRDevice]";
         m_vrplugin->shutdownVR();
-        m_vrinfo.destroyVRDevice(m_vrplugin);
-        m_vrinfo.unloadLib();
+//        m_vrinfo.destroyVRDevice(m_vrplugin);
+//        m_vrinfo.unloadLib();
         m_vrInitialized = false; // becasue the above gets called a bunch...
     }
 }
