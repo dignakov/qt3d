@@ -18,7 +18,7 @@ SUBDIRS += \
 #    qardboard \
 #    advancedcustommaterial \
 #    simplecustommaterial \
-#    scene2d \
+    scene2d \
 #    phong-cubes \
 #    pbr-materials \
     vr \
