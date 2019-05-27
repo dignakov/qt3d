@@ -22,7 +22,7 @@ struct QVRDeviceData
 //    QMatrix4x4 rightEyeProjection;
 };
 
-class QT3DRENDERSHARED_EXPORT QVRDevice : public Qt3DCore::QNode
+class Q_3DRENDERSHARED_EXPORT QVRDevice : public Qt3DCore::QNode
 {
     Q_OBJECT
     Q_PROPERTY(Qt3DRender::QAbstractTexture *leftEyeTexture READ leftEyeTexture WRITE setLeftEyeTexture NOTIFY leftEyeTextureChanged)

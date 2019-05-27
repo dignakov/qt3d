@@ -156,7 +156,8 @@ Entity {
         rightEyeTexture: rightEyeRenderTarget.colorTexture
 //        pluginLocation: "/home/dmitri/Code/VR/qt3d_vr_deviceplugins/build/libqt_vrdevice_test.so"
 //        pluginLocation: "/home/dmitri/Installs/Src/Qt/qt3d/examples/qt3d/openvr_plugin/libopenvr_plugin.so"
-        pluginLocation: "/home/dmitri/Installs/Src/Qt/qt3d/examples/qt3d/vr_plugin/libvr_plugin.so"
+//        pluginLocation: "/home/dmitri/Installs/Src/Qt/qt3d/examples/qt3d/vr_plugin/libvr_plugin.so"
+        pluginLocation: "/home/dmitri/Code/Qt/build-qt3d-Desktop_Qt_5_13_0_GCC_64bit2-Debug/examples/qt3d/vr_plugin/libvr_plugin.so"
 //        pluginLocation: "libvrplugin_test.so"
     }
 

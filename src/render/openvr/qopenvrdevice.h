@@ -21,7 +21,7 @@ struct QOpenVRDeviceData
     float farPlane;
 };
 
-class QT3DRENDERSHARED_EXPORT QOpenVRDevice : public Qt3DRender::QVRDevice
+class Q_3DRENDERSHARED_EXPORT QOpenVRDevice : public Qt3DRender::QVRDevice
 {
     Q_OBJECT
     Q_PROPERTY(Qt3DRender::QAbstractTexture *leftEyeTexture READ leftEyeTexture WRITE setLeftEyeTexture NOTIFY leftEyeTextureChanged)

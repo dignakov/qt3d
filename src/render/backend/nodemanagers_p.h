@@ -397,7 +397,7 @@ template<>
 Q_3DRENDERSHARED_PRIVATE_EXPORT JointManager *NodeManagers::manager<Joint>() const Q_DECL_NOEXCEPT;
 
 template<>
-QT3DRENDERSHARED_PRIVATE_EXPORT VRDeviceManager *NodeManagers::manager<VRDevice>() const Q_DECL_NOEXCEPT;
+Q_3DRENDERSHARED_PRIVATE_EXPORT VRDeviceManager *NodeManagers::manager<VRDevice>() const Q_DECL_NOEXCEPT;
 
 } // Render
 

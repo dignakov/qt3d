@@ -15,7 +15,7 @@ struct QOpenVRSubmitCommandData
     Qt3DCore::QNodeId deviceId;
 };
 
-class QT3DRENDERSHARED_EXPORT QOpenVRSubmitCommand : public QFrameGraphNode
+class Q_3DRENDERSHARED_EXPORT QOpenVRSubmitCommand : public QFrameGraphNode
 {
     Q_OBJECT
     Q_PROPERTY(Qt3DRender::QOpenVRDevice *device READ device WRITE setDevice NOTIFY deviceChanged)
