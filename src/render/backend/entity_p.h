@@ -97,6 +97,10 @@ public:
     HEntity handle() const { return m_handle; }
     Entity *parent() const;
     HEntity parentHandle() const { return m_parentHandle; }
+    Qt3DCore::QNodeId parentEntityId() const { return m_parentEntityId; }
+
+    void clearEntityHierarchy();
+    void rebuildEntityHierarchy();
 
     void appendChildHandle(HEntity childHandle);
     void removeChildHandle(HEntity childHandle) { m_childrenHandles.removeOne(childHandle); }
@@ -181,6 +185,8 @@ private:
     HEntity m_parentHandle;
     QVector<HEntity > m_childrenHandles;
 
+    Qt3DCore::QNodeId m_parentEntityId;
+
     HMatrix m_worldTransform;
     QSharedPointer<Sphere> m_localBoundingVolume;
     QSharedPointer<Sphere> m_worldBoundingVolume;
@@ -214,25 +220,25 @@ private:
 #define ENTITY_COMPONENT_TEMPLATE_SPECIALIZATION(Type, Handle) \
     /* Handle */ \
     template<> \
-    QT3DRENDERSHARED_PRIVATE_EXPORT Handle Entity::componentHandle<Type>() const; \
+    Q_3DRENDERSHARED_PRIVATE_EXPORT Handle Entity::componentHandle<Type>() const; \
     /* Component */ \
     template<> \
-    QT3DRENDERSHARED_PRIVATE_EXPORT Type *Entity::renderComponent<Type>() const; \
+    Q_3DRENDERSHARED_PRIVATE_EXPORT Type *Entity::renderComponent<Type>() const; \
     /* Uuid */ \
     template<> \
-    QT3DRENDERSHARED_PRIVATE_EXPORT Qt3DCore::QNodeId Entity::componentUuid<Type>() const;
+    Q_3DRENDERSHARED_PRIVATE_EXPORT Qt3DCore::QNodeId Entity::componentUuid<Type>() const;
 
 
 #define ENTITY_COMPONENT_LIST_TEMPLATE_SPECIALIZATION(Type, Handle) \
     /* Handle */ \
     template<> \
-    QT3DRENDERSHARED_PRIVATE_EXPORT QVector<Handle> Entity::componentsHandle<Type>() const; \
+    Q_3DRENDERSHARED_PRIVATE_EXPORT QVector<Handle> Entity::componentsHandle<Type>() const; \
     /* Component */ \
     template<> \
-    QT3DRENDERSHARED_PRIVATE_EXPORT QVector<Type *> Entity::renderComponents<Type>() const; \
+    Q_3DRENDERSHARED_PRIVATE_EXPORT QVector<Type *> Entity::renderComponents<Type>() const; \
     /* Uuid */ \
     template<> \
-    QT3DRENDERSHARED_PRIVATE_EXPORT Qt3DCore::QNodeIdVector Entity::componentsUuid<Type>() const;
+    Q_3DRENDERSHARED_PRIVATE_EXPORT Qt3DCore::QNodeIdVector Entity::componentsUuid<Type>() const;
 
 #define ENTITY_COMPONENT_TEMPLATE_IMPL(Type, Handle, Manager, variable) \
     /* Handle */ \

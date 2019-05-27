@@ -130,6 +130,7 @@ GraphicsContext::GraphicsContext()
     , m_glHelper(nullptr)
     , m_shaderCache(nullptr)
     , m_debugLogger(nullptr)
+    , m_currentVAO(nullptr)
 {
 }
 
@@ -199,15 +200,20 @@ bool GraphicsContext::makeCurrent(QSurface *surface)
         return false;
     }
 
+    initializeHelpers(surface);
+
+    return true;
+}
+
+void GraphicsContext::initializeHelpers(QSurface *surface)
+{
     // Set the correct GL Helper depending on the surface
     // If no helper exists, create one
-
     m_glHelper = m_glHelpers.value(surface);
     if (!m_glHelper) {
         m_glHelper = resolveHighestOpenGLFunctions();
         m_glHelpers.insert(surface, m_glHelper);
     }
-    return true;
 }
 
 void GraphicsContext::doneCurrent()
@@ -226,7 +232,7 @@ QOpenGLShaderProgram *GraphicsContext::createShaderProgram(Shader *shaderNode)
     const auto shaderCode = shaderNode->shaderCode();
     QString logs;
     for (int i = QShaderProgram::Vertex; i <= QShaderProgram::Compute; ++i) {
-        const QShaderProgram::ShaderType type = static_cast<const QShaderProgram::ShaderType>(i);
+        const QShaderProgram::ShaderType type = static_cast<QShaderProgram::ShaderType>(i);
         if (!shaderCode.at(i).isEmpty()) {
             // Note: logs only return the error but not all the shader code
             // we could append it

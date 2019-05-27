@@ -164,8 +164,11 @@ bool RayCastingJob::runHelper()
             rays.back().transform(*pair.first->worldTransform());
             break;
         case QAbstractRayCasterPrivate::ScreenScapeRayCaster:
-            for (const PickingUtils::ViewportCameraAreaDetails &vca : vcaDetails)
-                rays << rayForViewportAndCamera(vca, nullptr, pair.second->position());
+            for (const PickingUtils::ViewportCameraAreaDetails &vca : vcaDetails) {
+                auto ray = rayForViewportAndCamera(vca, nullptr, pair.second->position());
+                if (ray.isValid())
+                    rays << ray;
+            }
             break;
         default:
             Q_UNREACHABLE();
@@ -183,7 +186,7 @@ bool RayCastingJob::runHelper()
                     gathererFunctor.m_manager = m_manager;
                     gathererFunctor.m_ray = ray;
                     gathererFunctor.m_objectPickersRequired = false;
-                    sphereHits << gathererFunctor.computeHits(entityPicker.entities(), true);
+                    sphereHits << gathererFunctor.computeHits(entityPicker.entities(), QPickingSettings::AllPicks);
                 }
                 if (edgePickingRequested) {
                     PickingUtils::LineCollisionGathererFunctor gathererFunctor;
@@ -191,7 +194,7 @@ bool RayCastingJob::runHelper()
                     gathererFunctor.m_ray = ray;
                     gathererFunctor.m_pickWorldSpaceTolerance = pickWorldSpaceTolerance;
                     gathererFunctor.m_objectPickersRequired = false;
-                    sphereHits << gathererFunctor.computeHits(entityPicker.entities(), true);
+                    sphereHits << gathererFunctor.computeHits(entityPicker.entities(), QPickingSettings::AllPicks);
                     PickingUtils::AbstractCollisionGathererFunctor::sortHits(sphereHits);
                 }
                 if (pointPickingRequested) {
@@ -200,7 +203,7 @@ bool RayCastingJob::runHelper()
                     gathererFunctor.m_ray = ray;
                     gathererFunctor.m_pickWorldSpaceTolerance = pickWorldSpaceTolerance;
                     gathererFunctor.m_objectPickersRequired = false;
-                    sphereHits << gathererFunctor.computeHits(entityPicker.entities(), true);
+                    sphereHits << gathererFunctor.computeHits(entityPicker.entities(), QPickingSettings::AllPicks);
                     PickingUtils::AbstractCollisionGathererFunctor::sortHits(sphereHits);
                 }
                 if (!primitivePickingRequested) {

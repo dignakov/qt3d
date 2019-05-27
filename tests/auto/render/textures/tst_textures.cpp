@@ -112,6 +112,24 @@ private:
     Q_DECLARE_PRIVATE(TestTexture)
 };
 
+class TestSharedGLTexturePrivate : public Qt3DRender::QAbstractTexturePrivate
+{
+};
+
+class TestSharedGLTexture : public Qt3DRender::QAbstractTexture
+{
+public:
+    TestSharedGLTexture(int textureId, Qt3DCore::QNode *p = nullptr)
+        : QAbstractTexture(*new TestSharedGLTexturePrivate(), p)
+    {
+        d_func()->m_sharedTextureId = textureId;
+    }
+
+private:
+    Q_DECLARE_PRIVATE(TestSharedGLTexture)
+};
+
+
 /**
  * @brief Test QTextureImage
  */
@@ -163,6 +181,11 @@ class tst_RenderTextures : public Qt3DCore::QBackendNodeTester
         return tex;
     }
 
+    Qt3DRender::QAbstractTexture *createQTextureWithTextureId(int textureId)
+    {
+        return new TestSharedGLTexture(textureId);
+    }
+
     Qt3DRender::Render::Texture *createBackendTexture(Qt3DRender::QAbstractTexture *frontend,
                                                       Qt3DRender::Render::TextureManager *texMgr,
                                                       Qt3DRender::Render::TextureImageManager *texImgMgr,
@@ -211,6 +234,8 @@ private Q_SLOTS:
 
         // THEN
         QCOMPARE(mgrs->glTextureManager()->lookupResource(bt1a->peerId()), mgrs->glTextureManager()->lookupResource(bt1b->peerId()));
+
+        renderer.shutdown();
     }
 
     void shouldCreateDifferentGLTexturess()
@@ -264,6 +289,79 @@ private Q_SLOTS:
         QCOMPARE(glTextures[0]->properties(), glTextures[2]->properties());
         QCOMPARE(glTextures[1]->properties(), glTextures[3]->properties());
         QVERIFY(glTextures[0]->properties() != glTextures[1]->properties());
+
+        renderer.shutdown();
+    }
+
+    void shouldCreateDifferentGLTexturesWhenUsingSharedTextureIds()
+    {
+        QScopedPointer<Qt3DRender::Render::NodeManagers> mgrs(new Qt3DRender::Render::NodeManagers());
+        Qt3DRender::Render::Renderer renderer(Qt3DRender::QRenderAspect::Synchronous);
+        renderer.setNodeManagers(mgrs.data());
+
+        // both texture having the same sharedTextureId
+        {
+            // GIVEN
+            Qt3DRender::QAbstractTexture *tex1a = createQTextureWithTextureId(1);
+            Qt3DRender::QAbstractTexture *tex1b = createQTextureWithTextureId(1);
+
+            // WHEN
+            Qt3DRender::Render::Texture *bt1 = createBackendTexture(tex1a,
+                                                                    mgrs->textureManager(),
+                                                                    mgrs->textureImageManager(),
+                                                                    mgrs->textureImageDataManager());
+            Qt3DRender::Render::Texture *bt2 = createBackendTexture(tex1b,
+                                                                    mgrs->textureManager(),
+                                                                    mgrs->textureImageManager(),
+                                                                    mgrs->textureImageDataManager());
+            // THEN
+            QCOMPARE(bt1->sharedTextureId(), 1);
+            QCOMPARE(bt2->sharedTextureId(), 1);
+
+            // WHEN
+            renderer.updateTexture(bt1);
+            renderer.updateTexture(bt2);
+
+            // THEN
+            Qt3DRender::Render::GLTexture *glt1 = mgrs->glTextureManager()->lookupResource(bt1->peerId());
+            Qt3DRender::Render::GLTexture *glt2 = mgrs->glTextureManager()->lookupResource(bt2->peerId());
+            QVERIFY(glt1 != glt2);
+            QCOMPARE(glt1->sharedTextureId(), bt1->sharedTextureId());
+            QCOMPARE(glt2->sharedTextureId(), bt2->sharedTextureId());
+        }
+
+        // textures having a different sharedTextureId
+        {
+            // GIVEN
+            Qt3DRender::QAbstractTexture *tex1a = createQTextureWithTextureId(1);
+            Qt3DRender::QAbstractTexture *tex1b = createQTextureWithTextureId(2);
+
+            // WHEN
+            Qt3DRender::Render::Texture *bt1 = createBackendTexture(tex1a,
+                                                                    mgrs->textureManager(),
+                                                                    mgrs->textureImageManager(),
+                                                                    mgrs->textureImageDataManager());
+            Qt3DRender::Render::Texture *bt2 = createBackendTexture(tex1b,
+                                                                    mgrs->textureManager(),
+                                                                    mgrs->textureImageManager(),
+                                                                    mgrs->textureImageDataManager());
+            // THEN
+            QCOMPARE(bt1->sharedTextureId(), 1);
+            QCOMPARE(bt2->sharedTextureId(), 2);
+
+            // WHEN
+            renderer.updateTexture(bt1);
+            renderer.updateTexture(bt2);
+
+            // THEN
+            Qt3DRender::Render::GLTexture *glt1 = mgrs->glTextureManager()->lookupResource(bt1->peerId());
+            Qt3DRender::Render::GLTexture *glt2 = mgrs->glTextureManager()->lookupResource(bt2->peerId());
+            QVERIFY(glt1 != glt2);
+            QCOMPARE(glt1->sharedTextureId(), bt1->sharedTextureId());
+            QCOMPARE(glt2->sharedTextureId(), bt2->sharedTextureId());
+        }
+
+        renderer.shutdown();
     }
 
     void generatorsShouldCreateSameData()
@@ -334,6 +432,8 @@ private Q_SLOTS:
 
         QCOMPARE(texDataMgr->getData(tg1a), texDataMgr->getData(tg1b));
         QVERIFY(texDataMgr->getData(tg1a) != texDataMgr->getData(tg2));
+
+        renderer.shutdown();
     }
 
     void checkTextureImageInitialState()
@@ -538,6 +638,8 @@ private Q_SLOTS:
             renderer.clearDirtyBits(Qt3DRender::Render::AbstractRenderer::AllDirty);
             backendImage.unsetDirty();
         }
+
+        renderer.shutdown();
     }
 
     void checkTextureImageProperlyReleaseGenerator()
@@ -601,6 +703,8 @@ private Q_SLOTS:
         QCOMPARE(texImgDataMgr->pendingGenerators().size(), 0);
         QVERIFY(texImgDataMgr->getData(frontendGenerator).isNull());
         QVERIFY(texImgDataMgr->getData(backendGenerator).isNull());
+
+        renderer.shutdown();
     }
 
     void checkTextureIsMarkedForDeletion()
@@ -632,6 +736,8 @@ private Q_SLOTS:
         QCOMPARE(texMgr->textureIdsToCleanup().size(), 1);
         QCOMPARE(texMgr->textureIdsToCleanup().first(), frontendTexture->id());
         QVERIFY(texMgr->lookupResource(frontendTexture->id()) == nullptr);
+
+        renderer.shutdown();
     }
 
     void checkTextureDestructionReconstructionWithinSameLoop()
@@ -666,6 +772,8 @@ private Q_SLOTS:
         QVERIFY(backendTexture != nullptr);
         QCOMPARE(texMgr->textureIdsToCleanup().size(), 0);
         QCOMPARE(texMgr->lookupResource(frontendTexture->id()), backendTexture);
+
+        renderer.shutdown();
     }
 
     void checkTextureImageDirtinessPropagatesToTextures()
@@ -777,6 +885,8 @@ private Q_SLOTS:
         QVERIFY(backendTexture1->dirtyFlags() == Qt3DRender::Render::Texture::NotDirty);
         QVERIFY(backendTexture2->dirtyFlags() & Qt3DRender::Render::Texture::DirtyImageGenerators);
         QVERIFY(backendTexture3->dirtyFlags() & Qt3DRender::Render::Texture::DirtyImageGenerators);
+
+        renderer.shutdown();
     }
 };
 

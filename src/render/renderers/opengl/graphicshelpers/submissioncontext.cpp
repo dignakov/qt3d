@@ -49,6 +49,7 @@
 #include <Qt3DRender/private/buffer_p.h>
 #include <Qt3DRender/private/attribute_p.h>
 #include <Qt3DRender/private/rendercommand_p.h>
+#include <Qt3DRender/private/renderstates_p.h>
 #include <Qt3DRender/private/renderstateset_p.h>
 #include <Qt3DRender/private/rendertarget_p.h>
 #include <Qt3DRender/private/graphicshelperinterface_p.h>
@@ -76,6 +77,7 @@
 #include <Qt3DRender/private/graphicshelperes2_p.h>
 #include <Qt3DRender/private/graphicshelperes3_p.h>
 
+#include <private/qdebug_p.h>
 #include <QSurface>
 #include <QWindow>
 #include <QOpenGLTexture>
@@ -95,40 +97,18 @@ namespace Qt3DRender {
 namespace Render {
 
 
-class TextureExtRendererLocker
-{
-public:
-    static void lock(GLTexture *tex)
-    {
-        if (!tex->isExternalRenderingEnabled())
-            return;
-        if (s_lockHash.keys().contains(tex)) {
-            ++s_lockHash[tex];
-        } else {
-            tex->externalRenderingLock()->lock();
-            s_lockHash[tex] = 1;
-        }
-    }
-    static void unlock(GLTexture *tex)
-    {
-        if (!tex->isExternalRenderingEnabled())
-            return;
-        if (!s_lockHash.keys().contains(tex))
-            return;
-
-        --s_lockHash[tex];
-        if (s_lockHash[tex] == 0) {
-            s_lockHash.remove(tex);
-            tex->externalRenderingLock()->unlock();
-        }
-    }
-private:
-    static QHash<GLTexture*, int> s_lockHash;
-};
-
-QHash<GLTexture*, int> TextureExtRendererLocker::s_lockHash = QHash<GLTexture*, int>();
-
 static QHash<unsigned int, SubmissionContext*> static_contexts;
+
+unsigned int nextFreeContextId()
+{
+    for (unsigned int i=0; i < 0xffff; ++i) {
+        if (!static_contexts.contains(i))
+            return i;
+    }
+
+    qFatal("Couldn't find free context ID");
+    return 0;
+}
 
 namespace {
 
@@ -365,16 +345,6 @@ void applyStateHelper<LineWidth>(const LineWidth *state, SubmissionContext *gc)
 
 } // anonymous
 
-unsigned int nextFreeContextId()
-{
-    for (unsigned int i=0; i < 0xffff; ++i) {
-        if (!static_contexts.contains(i))
-            return i;
-    }
-
-    qFatal("Couldn't find free context ID");
-    return 0;
-}
 
 SubmissionContext::SubmissionContext()
     : GraphicsContext()
@@ -393,7 +363,6 @@ SubmissionContext::SubmissionContext()
     , m_stateSet(nullptr)
     , m_renderer(nullptr)
     , m_uboTempArray(QByteArray(1024, 0))
-    , m_currentVAO(nullptr)
 {
     static_contexts[m_id] = this;
 }
@@ -409,7 +378,7 @@ SubmissionContext::~SubmissionContext()
 void SubmissionContext::initialize()
 {
     GraphicsContext::initialize();
-    m_activeTextures.resize(maxTextureUnitsCount());
+    m_textureContext.initialize(this);
 }
 
 void SubmissionContext::resolveRenderTargetFormat()
@@ -461,10 +430,6 @@ bool SubmissionContext::beginDrawing(QSurface *surface)
     // TODO: cache surface format somewhere rather than doing this every time render surface changes
     resolveRenderTargetFormat();
 
-    // Sets or Create the correct m_glHelper
-    // for the current surface
-    activateGLHelper();
-
 #if defined(QT3D_RENDER_ASPECT_OPENGL_DEBUG)
     GLint err = m_gl->functions()->glGetError();
     if (err != 0) {
@@ -474,21 +439,17 @@ bool SubmissionContext::beginDrawing(QSurface *surface)
 
     if (!isInitialized())
         initialize();
+    initializeHelpers(m_surface);
 
     // need to reset these values every frame, may get overwritten elsewhere
     m_gl->functions()->glClearColor(m_currClearColorValue.redF(), m_currClearColorValue.greenF(), m_currClearColorValue.blueF(), m_currClearColorValue.alphaF());
     m_gl->functions()->glClearDepthf(m_currClearDepthValue);
     m_gl->functions()->glClearStencil(m_currClearStencilValue);
 
-
     if (m_activeShader) {
         m_activeShader = nullptr;
         m_activeShaderDNA = 0;
     }
-
-    // reset active textures
-    for (int u = 0; u < m_activeTextures.size(); ++u)
-        m_activeTextures[u].texture = nullptr;
 
     m_boundArrayBuffer = nullptr;
 
@@ -507,10 +468,7 @@ void SubmissionContext::endDrawing(bool swapBuffers)
         m_gl->swapBuffers(m_surface);
     if (m_ownCurrent)
         m_gl->doneCurrent();
-    decayTextureScores();
-    for (int i = 0; i < m_activeTextures.size(); ++i)
-        if (m_activeTextures[i].texture)
-            TextureExtRendererLocker::unlock(m_activeTextures[i].texture);
+    m_textureContext.endDrawing();
 }
 
 void SubmissionContext::activateRenderTarget(Qt3DCore::QNodeId renderTargetNodeId, const AttachmentPack &attachments, GLuint defaultFboId)
@@ -707,8 +665,10 @@ QImage SubmissionContext::readFramebuffer(const QRect &rect)
         break;
 #endif
     default:
-        // unsupported format
-        Q_UNREACHABLE();
+        auto warning = qWarning();
+        warning << "Unable to convert";
+        QtDebugUtils::formatQEnum(warning, m_renderTargetFormat);
+        warning << "render target texture format to QImage.";
         return img;
     }
 
@@ -812,20 +772,6 @@ void SubmissionContext::setOpenGLContext(QOpenGLContext* ctx)
     m_gl = ctx;
 }
 
-void SubmissionContext::activateGLHelper()
-{
-    // Sets the correct GL Helper depending on the surface
-    // If no helper exists, create one
-    m_glHelper = m_glHelpers.value(m_surface);
-    if (!m_glHelper) {
-        m_glHelper = resolveHighestOpenGLFunctions();
-        m_glHelpers.insert(m_surface, m_glHelper);
-        // Note: OpenGLContext is current at this point
-        m_gl->functions()->glDisable(GL_DITHER);
-    }
-}
-
-
 // Called only from RenderThread
 bool SubmissionContext::activateShader(ProgramDNA shaderDNA)
 {
@@ -907,112 +853,8 @@ void SubmissionContext::setActiveMaterial(Material *rmat)
     if (m_material == rmat)
         return;
 
-    deactivateTexturesWithScope(TextureScopeMaterial);
+    m_textureContext.deactivateTexturesWithScope(TextureSubmissionContext::TextureScopeMaterial);
     m_material = rmat;
-}
-
-int SubmissionContext::activateTexture(TextureScope scope, GLTexture *tex, int onUnit)
-{
-    // Returns the texture unit to use for the texture
-    // This always return a valid unit, unless there are more textures than
-    // texture unit available for the current material
-    onUnit = assignUnitForTexture(tex);
-
-    // check we didn't overflow the available units
-    if (onUnit == -1)
-        return -1;
-
-    // actually re-bind if required, the tex->dna on the unit not being the same
-    // Note: tex->dna() could be 0 if the texture has not been created yet
-    if (m_activeTextures[onUnit].texture != tex) {
-        // Texture must have been created and updated at this point
-        QOpenGLTexture *glTex = tex->getGLTexture();
-        if (glTex == nullptr)
-            return -1;
-        glTex->bind(onUnit);
-        if (m_activeTextures[onUnit].texture)
-            TextureExtRendererLocker::unlock(m_activeTextures[onUnit].texture);
-        m_activeTextures[onUnit].texture = tex;
-        TextureExtRendererLocker::lock(tex);
-    }
-
-#if defined(QT3D_RENDER_ASPECT_OPENGL_DEBUG)
-    int err = m_gl->functions()->glGetError();
-    if (err)
-        qCWarning(Backend) << "GL error after activating texture" << QString::number(err, 16)
-                           << tex->getGLTexture()->textureId() << "on unit" << onUnit;
-#endif
-
-    m_activeTextures[onUnit].score = 200;
-    m_activeTextures[onUnit].pinned = true;
-    m_activeTextures[onUnit].scope = scope;
-
-    return onUnit;
-}
-
-void SubmissionContext::deactivateTexturesWithScope(TextureScope ts)
-{
-    for (int u=0; u<m_activeTextures.size(); ++u) {
-        if (!m_activeTextures[u].pinned)
-            continue; // inactive, ignore
-
-        if (m_activeTextures[u].scope == ts) {
-            m_activeTextures[u].pinned = false;
-            m_activeTextures[u].score = qMax(m_activeTextures[u].score, 1) - 1;
-        }
-    } // of units iteration
-}
-
-void SubmissionContext::deactivateTexture(GLTexture* tex)
-{
-    for (int u=0; u<m_activeTextures.size(); ++u) {
-        if (m_activeTextures[u].texture == tex) {
-            Q_ASSERT(m_activeTextures[u].pinned);
-            m_activeTextures[u].pinned = false;
-            return;
-        }
-    } // of units iteration
-
-    qCWarning(Backend) << Q_FUNC_INFO << "texture not active:" << tex;
-}
-
-/*!
-    \internal
-    Returns a texture unit for a texture, -1 if all texture units are assigned.
-    Tries to use the texture unit with the texture that hasn't been used for the longest time
-    if the texture happens not to be already pinned on a texture unit.
- */
-GLint SubmissionContext::assignUnitForTexture(GLTexture *tex)
-{
-    int lowestScoredUnit = -1;
-    int lowestScore = 0xfffffff;
-
-    for (int u=0; u<m_activeTextures.size(); ++u) {
-        if (m_activeTextures[u].texture == tex)
-            return u;
-
-        // No texture is currently active on the texture unit
-        // we save the texture unit with the texture that has been on there
-        // the longest time while not being used
-        if (!m_activeTextures[u].pinned) {
-            int score = m_activeTextures[u].score;
-            if (score < lowestScore) {
-                lowestScore = score;
-                lowestScoredUnit = u;
-            }
-        }
-    } // of units iteration
-
-    if (lowestScoredUnit == -1)
-        qCWarning(Backend) << Q_FUNC_INFO << "No free texture units!";
-
-    return lowestScoredUnit;
-}
-
-void SubmissionContext::decayTextureScores()
-{
-    for (int u = 0; u < m_activeTextures.size(); u++)
-        m_activeTextures[u].score = qMax(m_activeTextures[u].score - 1, 0);
 }
 
 void SubmissionContext::setCurrentStateSet(RenderStateSet *ss)
@@ -1246,6 +1088,33 @@ void SubmissionContext::clearStencilValue(int stencil)
     }
 }
 
+GLFence SubmissionContext::fenceSync()
+{
+    return m_glHelper->fenceSync();
+}
+
+void SubmissionContext::clientWaitSync(GLFence sync, GLuint64 nanoSecTimeout)
+{
+    qDebug() << Q_FUNC_INFO << sync;
+    m_glHelper->clientWaitSync(sync, nanoSecTimeout);
+}
+
+void SubmissionContext::waitSync(GLFence sync)
+{
+    qDebug() << Q_FUNC_INFO << sync;
+    m_glHelper->waitSync(sync);
+}
+
+bool SubmissionContext::wasSyncSignaled(GLFence sync)
+{
+    return m_glHelper->wasSyncSignaled(sync);
+}
+
+void SubmissionContext::deleteSync(GLFence sync)
+{
+    m_glHelper->deleteSync(sync);
+}
+
 // It will be easier if the QGraphicContext applies the QUniformPack
 // than the other way around
 bool SubmissionContext::setParameters(ShaderParameterPack &parameterPack)
@@ -1259,7 +1128,7 @@ bool SubmissionContext::setParameters(ShaderParameterPack &parameterPack)
     // to pinable so that we should easily find an available texture unit
     NodeManagers *manager = m_renderer->nodeManagers();
 
-    deactivateTexturesWithScope(TextureScopeMaterial);
+    m_textureContext.deactivateTexturesWithScope(TextureSubmissionContext::TextureScopeMaterial);
     // Update the uniforms with the correct texture unit id's
     PackUniformHash &uniformValues = parameterPack.uniforms();
 
@@ -1270,14 +1139,15 @@ bool SubmissionContext::setParameters(ShaderParameterPack &parameterPack)
             GLTexture *t = manager->glTextureManager()->lookupResource(namedTex.texId);
             if (t != nullptr) {
                 UniformValue &texUniform = uniformValues[namedTex.glslNameId];
-                Q_ASSERT(texUniform.valueType() == UniformValue::TextureValue);
-                const int texUnit = activateTexture(TextureScopeMaterial, t);
-                texUniform.data<int>()[namedTex.uniformArrayIndex] = texUnit;
-                if (texUnit == -1) {
-                    if (namedTex.glslNameId != irradianceId &&
-                        namedTex.glslNameId != specularId) {
-                        // Only return false if we are not dealing with env light textures
-                        return false;
+                if (texUniform.valueType() == UniformValue::TextureValue) {
+                    const int texUnit = m_textureContext.activateTexture(TextureSubmissionContext::TextureScopeMaterial, m_gl, t);
+                    texUniform.data<int>()[namedTex.uniformArrayIndex] = texUnit;
+                    if (texUnit == -1) {
+                        if (namedTex.glslNameId != irradianceId &&
+                            namedTex.glslNameId != specularId) {
+                            // Only return false if we are not dealing with env light textures
+                            return false;
+                        }
                     }
                 }
             }
@@ -1291,15 +1161,19 @@ bool SubmissionContext::setParameters(ShaderParameterPack &parameterPack)
 
     // Bind Shader Storage block to SSBO and update SSBO
     const QVector<BlockToSSBO> blockToSSBOs = parameterPack.shaderStorageBuffers();
-    int ssboIndex = 0;
     for (const BlockToSSBO b : blockToSSBOs) {
         Buffer *cpuBuffer = m_renderer->nodeManagers()->bufferManager()->lookupResource(b.m_bufferID);
         GLBuffer *ssbo = glBufferForRenderBuffer(cpuBuffer, GLBuffer::ShaderStorageBuffer);
-        bindShaderStorageBlock(shader->programId(), b.m_blockIndex, ssboIndex);
+
+        // bindShaderStorageBlock
+        // This is currently not required as we are introspecting the bindingIndex
+        // value from the shaders and not replacing them, making such a call useless
+        // bindShaderStorageBlock(shader->programId(), b.m_blockIndex, b.m_bindingIndex);
+
         // Needed to avoid conflict where the buffer would already
         // be bound as a VertexArray
         bindGLBuffer(ssbo, GLBuffer::ShaderStorageBuffer);
-        ssbo->bindBufferBase(this, ssboIndex++, GLBuffer::ShaderStorageBuffer);
+        ssbo->bindBufferBase(this, b.m_bindingIndex, GLBuffer::ShaderStorageBuffer);
         // TO DO: Make sure that there's enough binding points
     }
 

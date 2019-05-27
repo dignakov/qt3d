@@ -211,7 +211,6 @@ bool PickBoundingVolumeJob::runHelper()
     const bool edgePickingRequested = (m_renderSettings->pickMethod() & QPickingSettings::LinePicking);
     const bool pointPickingRequested = (m_renderSettings->pickMethod() & QPickingSettings::PointPicking);
     const bool primitivePickingRequested = pointPickingRequested | edgePickingRequested | trianglePickingRequested;
-    const bool allHitsRequested = (m_renderSettings->pickResultMode() == QPickingSettings::AllPicks);
     const bool frontFaceRequested =
             m_renderSettings->faceOrientationPickingMode() != QPickingSettings::BackFace;
     const bool backFaceRequested =
@@ -232,8 +231,14 @@ bool PickBoundingVolumeJob::runHelper()
         for (const PickingUtils::ViewportCameraAreaDetails &vca : vcaDetails) {
             PickingUtils::HitList sphereHits;
             QRay3D ray = rayForViewportAndCamera(vca, event.first, event.second.pos());
-            if (!ray.isValid())
+            if (!ray.isValid()) {
+                // An invalid rays is when we've lost our surface or the mouse
+                // has moved out of the viewport In case of a button released
+                // outside of the viewport, we still want to notify the
+                // lastCurrent entity about this.
+                dispatchPickEvents(event.second, PickingUtils::HitList(), eventButton, eventButtons, eventModifiers, m_renderSettings->pickResultMode());
                 continue;
+            }
 
             PickingUtils::HierarchicalEntityPicker entityPicker(ray);
             if (entityPicker.collectHits(m_manager, m_node)) {
@@ -243,14 +248,16 @@ bool PickBoundingVolumeJob::runHelper()
                     gathererFunctor.m_backFaceRequested = backFaceRequested;
                     gathererFunctor.m_manager = m_manager;
                     gathererFunctor.m_ray = ray;
-                    sphereHits << gathererFunctor.computeHits(entityPicker.entities(), allHitsRequested);
+                    gathererFunctor.m_entityToPriorityTable = entityPicker.entityToPriorityTable();
+                    sphereHits << gathererFunctor.computeHits(entityPicker.entities(), m_renderSettings->pickResultMode());
                 }
                 if (edgePickingRequested) {
                     PickingUtils::LineCollisionGathererFunctor gathererFunctor;
                     gathererFunctor.m_manager = m_manager;
                     gathererFunctor.m_ray = ray;
                     gathererFunctor.m_pickWorldSpaceTolerance = pickWorldSpaceTolerance;
-                    sphereHits << gathererFunctor.computeHits(entityPicker.entities(), allHitsRequested);
+                    gathererFunctor.m_entityToPriorityTable = entityPicker.entityToPriorityTable();
+                    sphereHits << gathererFunctor.computeHits(entityPicker.entities(), m_renderSettings->pickResultMode());
                     PickingUtils::AbstractCollisionGathererFunctor::sortHits(sphereHits);
                 }
                 if (pointPickingRequested) {
@@ -258,19 +265,20 @@ bool PickBoundingVolumeJob::runHelper()
                     gathererFunctor.m_manager = m_manager;
                     gathererFunctor.m_ray = ray;
                     gathererFunctor.m_pickWorldSpaceTolerance = pickWorldSpaceTolerance;
-                    sphereHits << gathererFunctor.computeHits(entityPicker.entities(), allHitsRequested);
+                    gathererFunctor.m_entityToPriorityTable = entityPicker.entityToPriorityTable();
+                    sphereHits << gathererFunctor.computeHits(entityPicker.entities(), m_renderSettings->pickResultMode());
                     PickingUtils::AbstractCollisionGathererFunctor::sortHits(sphereHits);
                 }
                 if (!primitivePickingRequested) {
                     sphereHits << entityPicker.hits();
                     PickingUtils::AbstractCollisionGathererFunctor::sortHits(sphereHits);
-                    if (!allHitsRequested)
+                    if (m_renderSettings->pickResultMode() != QPickingSettings::AllPicks)
                         sphereHits = { sphereHits.front() };
                 }
             }
 
             // Dispatch events based on hit results
-            dispatchPickEvents(event.second, sphereHits, eventButton, eventButtons, eventModifiers, allHitsRequested);
+            dispatchPickEvents(event.second, sphereHits, eventButton, eventButtons, eventModifiers, m_renderSettings->pickResultMode());
         }
     }
 

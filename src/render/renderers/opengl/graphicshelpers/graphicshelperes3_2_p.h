@@ -64,9 +64,13 @@ public:
     GraphicsHelperES3_2();
     ~GraphicsHelperES3_2();
 
+    bool supportsFeature(Feature feature) const override;
+
     // QGraphicHelperInterface interface
     void bindFrameBufferAttachment(QOpenGLTexture *texture, const Attachment &attachment) override;
     bool frameBufferNeedsRenderBuffer(const Attachment &attachment) override;
+    void setVerticesPerPatch(GLint verticesPerPatch) override;
+    void drawElementsInstancedBaseVertexBaseInstance(GLenum primitiveType, GLsizei primitiveCount, GLint indexType, void *indices, GLsizei instances, GLint baseVertex = 0,  GLint baseInstance = 0) override;
 };
 
 } // namespace Render

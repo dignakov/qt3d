@@ -65,6 +65,7 @@
 #include <Qt3DRender/private/qmemorybarrier_p.h>
 #include <Qt3DRender/private/qrendercapture_p.h>
 #include <Qt3DRender/private/qblitframebuffer_p.h>
+#include <Qt3DRender/private/qwaitfence_p.h>
 
 #include <Qt3DCore/private/qframeallocator_p.h>
 #include <Qt3DRender/private/aligned_malloc_p.h>
@@ -174,6 +175,13 @@ public:
     inline void appendProximityFilterId(const Qt3DCore::QNodeId proximityFilterId) { m_data.m_proximityFilterIds.push_back(proximityFilterId); }
     inline Qt3DCore::QNodeIdVector proximityFilterIds() const { return m_data.m_proximityFilterIds; }
 
+    inline void appendInsertFenceId(const Qt3DCore::QNodeId setFenceId) { m_insertFenceIds.push_back(setFenceId); }
+    // We prefix with get to avoid confusion when it is called
+    inline Qt3DCore::QNodeIdVector insertFenceIds() const { return m_insertFenceIds; }
+
+    inline void appendWaitFence(const QWaitFenceData &data) { m_waitFences.push_back(data); }
+    inline QVector<QWaitFenceData> waitFences() const { return m_waitFences; }
+
     inline void setRenderPassFilter(const RenderPassFilter *rpFilter) Q_DECL_NOTHROW { m_data.m_passFilter = rpFilter; }
     inline const RenderPassFilter *renderPassFilter() const Q_DECL_NOTHROW { return m_data.m_passFilter; }
 
@@ -183,11 +191,11 @@ public:
     inline RenderStateSet *stateSet() const Q_DECL_NOTHROW { return m_stateSet; }
     void setStateSet(RenderStateSet *stateSet) Q_DECL_NOTHROW { m_stateSet = stateSet; }
 
-    inline void setSubmitVR(bool submit) { m_submitVR = submit; }
-    inline bool shouldSubmitVR() const { return m_submitVR; }
+    inline void setSubmitVR(bool submit) Q_DECL_NOTHROW { m_submitVR = submit; }
+    inline bool shouldSubmitVR() const Q_DECL_NOTHROW { return m_submitVR; }
 
-    inline void setVRDeviceId(Qt3DCore::QNodeId deviceId) { m_vrDeviceId = deviceId; }
-    inline Qt3DCore::QNodeId vrDeviceId() const { return m_vrDeviceId; }
+    inline void setVRDeviceId(Qt3DCore::QNodeId deviceId) Q_DECL_NOTHROW { m_vrDeviceId = deviceId; }
+    inline Qt3DCore::QNodeId vrDeviceId() const Q_DECL_NOTHROW { return m_vrDeviceId; }
 
     inline bool noDraw() const Q_DECL_NOTHROW { return m_noDraw; }
     void setNoDraw(bool noDraw) Q_DECL_NOTHROW { m_noDraw = noDraw; }
@@ -326,6 +334,8 @@ private:
     bool m_frustumCulling:1;
     int m_workGroups[3];
     QMemoryBarrier::Operations m_memoryBarrier;
+    QVector<Qt3DCore::QNodeId> m_insertFenceIds;
+    QVector<QWaitFenceData> m_waitFences;
     bool m_submitVR;
     Qt3DCore::QNodeId m_vrDeviceId;
 

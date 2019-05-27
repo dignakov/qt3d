@@ -102,7 +102,9 @@ public:
         MemoryBarrier,
         ProximityFilter,
         BlitFramebuffer,
-        VRSubmit
+        SetFence,
+        WaitFence,
+	VRSubmit
     };
     FrameGraphNodeType nodeType() const { return m_nodeType; }
 
@@ -110,14 +112,14 @@ public:
     FrameGraphManager *manager() const;
 
     void setParentId(Qt3DCore::QNodeId parentId);
-    void appendChildId(Qt3DCore::QNodeId childHandle);
-    void removeChildId(Qt3DCore::QNodeId childHandle);
 
     Qt3DCore::QNodeId parentId() const;
     QVector<Qt3DCore::QNodeId> childrenIds() const;
 
     FrameGraphNode *parent() const;
     QVector<FrameGraphNode *> children() const;
+
+    void cleanup();
 
     void sceneChangeEvent(const Qt3DCore::QSceneChangePtr &e) override;
 

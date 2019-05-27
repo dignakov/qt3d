@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 Klaralvdalens Datakonsult AB (KDAB).
+** Copyright (C) 2019 Klaralvdalens Datakonsult AB (KDAB).
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the Qt3D module of the Qt Toolkit.
@@ -65,7 +65,7 @@ class Entity;
 class NodeManagers;
 
 
-class QT3DRENDERSHARED_PRIVATE_EXPORT UpdateEntityLayersJob: public Qt3DCore::QAspectJob
+class Q_3DRENDERSHARED_PRIVATE_EXPORT UpdateEntityLayersJob: public Qt3DCore::QAspectJob
 {
 public:
     UpdateEntityLayersJob();

@@ -72,6 +72,7 @@
 #include <Qt3DRender/private/shaderdata_p.h>
 #include <Qt3DRender/private/handle_types_p.h>
 #include <Qt3DRender/private/glbuffer_p.h>
+#include <Qt3DRender/private/glfence_p.h>
 #include <Qt3DRender/private/textureimage_p.h>
 #include <Qt3DRender/private/attribute_p.h>
 #include <Qt3DRender/private/geometry_p.h>
@@ -318,6 +319,10 @@ class GLBufferManager : public Qt3DCore::QResourceManager<
 {
 };
 
+class GLFenceManager : public QHash<Qt3DCore::QNodeId, GLFence>
+{
+};
+
 class TextureImageManager : public Qt3DCore::QResourceManager<
         TextureImage,
         Qt3DCore::QNodeId,
@@ -415,7 +420,7 @@ public:
     };
 
     void addDirtySkeleton(DirtyFlag dirtyFlag, HSkeleton skeletonHandle);
-    QVector<HSkeleton> dirtySkeletons(DirtyFlag dirtyFlag);
+    QVector<HSkeleton> takeDirtySkeletons(DirtyFlag dirtyFlag);
 
 private:
     QVector<HSkeleton> m_dirtyDataSkeletons;

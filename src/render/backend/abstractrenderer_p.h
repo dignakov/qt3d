@@ -87,7 +87,7 @@ class BackendNode;
 class OffscreenSurfaceHelper;
 class Shader;
 
-class QT3DRENDERSHARED_PRIVATE_EXPORT AbstractRenderer
+class Q_3DRENDERSHARED_PRIVATE_EXPORT AbstractRenderer
 {
 public:
     virtual ~AbstractRenderer() {}
@@ -114,6 +114,8 @@ public:
         JointDirty          = 1 << 11,
         LayersDirty         = 1 << 12,
         TechniquesDirty     = 1 << 13,
+        EntityHierarchyDirty= 1 << 14,
+        LightsDirty         = 1 << 15,
         AllDirty            = 0xffffff
     };
     Q_DECLARE_FLAGS(BackendNodeDirtySet, BackendNodeDirtyFlag)
@@ -153,6 +155,7 @@ public:
     virtual bool shouldRender() = 0;
     virtual void skipNextFrame() = 0;
 
+    virtual QVector<Qt3DCore::QAspectJobPtr> preRenderingJobs() = 0;
     virtual QVector<Qt3DCore::QAspectJobPtr> renderBinJobs() = 0;
     virtual Qt3DCore::QAspectJobPtr pickBoundingVolumeJob() = 0;
     virtual Qt3DCore::QAspectJobPtr rayCastingJob() = 0;

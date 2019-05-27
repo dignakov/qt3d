@@ -317,6 +317,12 @@ const struct FourCCFormat
 { DdsFourCC<'D','X','T','5'>::value,                { QOpenGLTexture::NoSourceFormat,   QOpenGLTexture::RGBA_DXT5,      QOpenGLTexture::NoPixelType,    16, true } },
 { DdsFourCC<'A','T','I','1'>::value,                { QOpenGLTexture::NoSourceFormat,   QOpenGLTexture::R_ATI1N_UNorm,  QOpenGLTexture::NoPixelType,     8, true } },
 { DdsFourCC<'A','T','I','2'>::value,                { QOpenGLTexture::NoSourceFormat,   QOpenGLTexture::RG_ATI2N_UNorm, QOpenGLTexture::NoPixelType,    16, true } },
+{ /* DXGI_FORMAT_R16_FLOAT */         111,          { QOpenGLTexture::Red,              QOpenGLTexture::R16F,           QOpenGLTexture::Float16,        2,  false } },
+{ /* DXGI_FORMAT_R16_FLOAT */         112,          { QOpenGLTexture::RG,               QOpenGLTexture::RG16F,          QOpenGLTexture::Float16,        4,  false } },
+{ /* DXGI_FORMAT_R16G16B16A16_FLOAT */113,          { QOpenGLTexture::RGBA,             QOpenGLTexture::RGBA16F,        QOpenGLTexture::Float16,        8,  false } },
+{ /* DXGI_FORMAT_R32_FLOAT */         114,          { QOpenGLTexture::Red,              QOpenGLTexture::R32F,           QOpenGLTexture::Float32,        4,  false } },
+{ /* DXGI_FORMAT_R32G32_FLOAT */      115,          { QOpenGLTexture::RG,               QOpenGLTexture::RG32F,          QOpenGLTexture::Float32,        8,  false } },
+{ /* DXGI_FORMAT_R32G32B32A32_FLOAT */116,          { QOpenGLTexture::RGBA,             QOpenGLTexture::RGBA32F,        QOpenGLTexture::Float32,        16, false } }
 };
 
 const struct DX10Format
@@ -1413,7 +1419,7 @@ QTextureFromSourceGenerator::QTextureFromSourceGenerator(QTextureLoader *texture
     , m_mirrored()
     , m_texture(textureId)
     , m_engine(engine)
-    , m_format(QAbstractTexture::RGBA8_UNorm)
+    , m_format(QAbstractTexture::NoFormat)
 {
     Q_ASSERT(textureLoader);
 
@@ -1467,6 +1473,69 @@ QUrl QTextureFromSourceGenerator::url() const
 bool QTextureFromSourceGenerator::isMirrored() const
 {
     return m_mirrored;
+}
+
+/*!
+ * \class QSharedGLTexture
+ * \brief Allows to use a textureId from a separate OpenGL context in a Qt 3D scene.
+ *
+ * Depending on the rendering mode used by Qt 3D, the shared context will either be:
+ * \list
+ * \li qt_gl_global_share_context when letting Qt 3D drive the rendering. When
+ * setting the attribute Qt::AA_ShareOpenGLContexts on the QApplication class,
+ * this will automatically make QOpenGLWidget instances have their context shared
+ * with qt_gl_global_share_context.
+ * \li the shared context from the QtQuick scene. You might have to subclass
+ * QWindow or use QtQuickRenderControl to have control over what that shared
+ * context is though as of 5.13 it is qt_gl_global_share_context.
+ * \endlist
+ *
+ * \since 5.13
+ *
+ * Any 3rd party engine that shares its context with the Qt 3D renderer can now
+ * provide texture ids that will be referenced by the Qt 3D texture.
+ *
+ * You can omit specifying the texture properties, Qt 3D will try at runtime to
+ * determine what they are. If you know them, you can of course provide them,
+ * avoid additional work for Qt 3D.
+ *
+ * Keep in mind that if you are using custom materials and shaders, you need to
+ * specify the correct sampler type to be used.
+ */
+
+QSharedGLTexture::QSharedGLTexture(Qt3DCore::QNode *parent)
+    : QAbstractTexture(parent)
+{
+    QAbstractTexturePrivate *d = static_cast<QAbstractTexturePrivate *>(Qt3DCore::QNodePrivate::get(this));
+    d->m_target = TargetAutomatic;
+}
+
+QSharedGLTexture::~QSharedGLTexture()
+{
+}
+
+/*!
+ * \qmlproperty textureId
+ *
+ * The OpenGL texture id value that you want Qt3D to gain access to.
+ */
+/*!
+ *\property Qt3DRender::QSharedGLTexture::textureId
+ *
+ * The OpenGL texture id value that you want Qt3D to gain access to.
+ */
+int QSharedGLTexture::textureId() const
+{
+    return static_cast<QAbstractTexturePrivate *>(d_ptr.get())->m_sharedTextureId;
+}
+
+void QSharedGLTexture::setTextureId(int id)
+{
+    QAbstractTexturePrivate *d = static_cast<QAbstractTexturePrivate *>(Qt3DCore::QNodePrivate::get(this));
+    if (d->m_sharedTextureId != id) {
+        d->m_sharedTextureId = id;
+        emit textureIdChanged(id);
+    }
 }
 
 } // namespace Qt3DRender

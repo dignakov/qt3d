@@ -101,7 +101,7 @@ void QNodePrivate::init(QNode *parent)
     Q_Q(QNode);
     if (m_scene) {
         // schedule the backend notification and scene registering -> set observers through scene
-        QMetaObject::invokeMethod(q, "_q_postConstructorInit", Qt::QueuedConnection);
+        m_scene->postConstructorInit()->addNode(q);
     }
 }
 
@@ -165,7 +165,7 @@ void QNodePrivate::notifyDestructionChangesAndRemoveFromScene()
  *
  * Sends a QNodeCreatedChange event to the aspects and then also notifies the
  * parent backend node of its new child. This is called in a deferred manner
- * by the QNodePrivate::init() method to notify the backend of newly created
+ * by NodePostConstructorInit::processNodes to notify the backend of newly created
  * nodes with a parent that is already part of the scene.
  *
  * Also notify the scene of this node, so it may set it's change arbiter.
@@ -394,15 +394,15 @@ void QNodePrivate::propertyChanged(int propertyIndex)
         if (data.canConvert<QNode*>()) {
             QNode *node = data.value<QNode*>();
 
-            // Ensure the node has issued a node creation change. We can end
-            // up here if a newly created node with a parent is immediately set
+            // Ensure the node and all ancestors have issued their node creation changes.
+            // We can end up here if a newly created node with a parent is immediately set
             // as a property on another node. In this case the deferred call to
             // _q_postConstructorInit() will not have happened yet as the event
-            // loop will still be blocked. So force it here and we catch this
-            // eventuality in the _q_postConstructorInit() function so that we
-            // do not repeat the creation and new child scene change events.
+            // loop will still be blocked. We need to do this for all ancestors,
+            // since the subtree of this node otherwise can end up on the backend
+            // with a reference to a non-existent parent.
             if (node)
-                QNodePrivate::get(node)->_q_postConstructorInit();
+                QNodePrivate::get(node)->_q_ensureBackendNodeCreated();
 
             const QNodeId id = node ? node->id() : QNodeId();
             return QVariant::fromValue(id);
@@ -503,6 +503,29 @@ void QNodePrivate::setArbiter(QLockableObserverInterface *arbiter)
     m_changeArbiter = static_cast<QAbstractArbiter *>(arbiter);
     if (m_changeArbiter)
         registerNotifiedProperties();
+}
+
+/*!
+ * \internal
+ * Makes sure this node has a backend by traversing the tree up to the most distant ancestor
+ * without a backend node and initializing that node. This is done to make sure the parent nodes
+ * are always created before the child nodes, since child nodes reference parent nodes at creation
+ * time.
+ */
+void QNodePrivate::_q_ensureBackendNodeCreated()
+{
+    if (m_hasBackendNode)
+        return;
+
+    Q_Q(QNode);
+
+    QNode *nextNode = q;
+    QNode *topNodeWithoutBackend = nullptr;
+    while (nextNode != nullptr && !QNodePrivate::get(nextNode)->m_hasBackendNode) {
+        topNodeWithoutBackend = nextNode;
+        nextNode = nextNode->parentNode();
+    }
+    QNodePrivate::get(topNodeWithoutBackend)->_q_postConstructorInit();
 }
 
 /*!
@@ -713,6 +736,36 @@ void QNodePrivate::nodePtrDeleter(QNode *q)
 */
 
 /*!
+    \fn void Qt3DCore::QNodeCommand::setReplyToCommandId(CommandId id)
+
+    Sets the command \a id to which the message is a reply.
+
+*/
+/*!
+    \fn  Qt3DCore::QNode::PropertyTrackingMode Qt3DCore::QNode::defaultPropertyTrackingMode() const
+
+    Returns the default property tracking mode which determines whether a
+    QNode should be listening for property updates.
+
+*/
+/*!
+    \fn Qt3DCore::QNode::clearPropertyTracking(const QString &propertyName)
+
+    Clears the tracking property called \a propertyName.
+*/
+/*!
+    \fn Qt3DCore::QNode::PropertyTrackingMode Qt3DCore::QNode::propertyTracking(const QString &propertyName) const
+
+    Returns the tracking mode of \a propertyName.
+*/
+
+/*!
+    \fn Qt3DCore::QNode::setPropertyTracking(const QString &propertyName, Qt3DCore::QNode::PropertyTrackingMode trackMode)
+
+    Sets the property tracking for \a propertyName and \a trackMode.
+*/
+
+/*!
      Creates a new QNode instance with parent \a parent.
 
      \note The backend aspects will be notified that a QNode instance is
@@ -820,6 +873,12 @@ void QNode::setParent(QNode *parent)
     if (parentNode() == parent &&
             ((parent != nullptr && d->m_parentId == parentNode()->id()) || parent == nullptr))
         return;
+
+    // remove ourself from postConstructorInit queue. The call to _q_setParentHelper
+    // will take care of creating the backend node if necessary depending on new parent.
+    if (d->m_scene)
+        d->m_scene->postConstructorInit()->removeNode(this);
+
     d->_q_setParentHelper(parent);
 
     // Block notifications as we want to let the _q_setParentHelper
@@ -955,11 +1014,49 @@ QNodeCreatedChangeBasePtr QNode::createNodeCreationChange() const
 }
 
 /*!
- * \brief Sends a command messages to the backend node
+   \fn Qt3DCore::QNodeCommand::CommandId Qt3DCore::QNodeCommand::inReplyTo() const
+
+   Returns the id of the original QNodeCommand message that
+   was sent to the backend.
+
+*/
+/*!
+    \fn void Qt3DCore::QNodeCommand::setData(const QVariant &data)
+
+    Sets the data (\a data) in the backend node to perform
+    the operations requested.
+*/
+/*!
+    \fn void Qt3DCore::QNodeCommand::setName(const QString &name)
+
+
+    Sets the data (\a name) in the backend node to perform
+    the operations requested.
+*/
+
+/*!
+    \enum Qt3DCore::QNode::PropertyTrackingMode
+
+    Indicates how a QNode listens for property updates.
+
+    \value TrackFinalValues
+           Tracks final values
+    \value DontTrackValues
+           Does not track values
+    \value TrackAllValues
+           Tracks all values
+*/
+/*!
+    \fn Qt3DCore::QNode::clearPropertyTrackings()
+
+    Erases all values that have been saved by the property tracking.
+*/
+/*!
+ * \brief Sends a command message to the backend node
  *
  * Creates a QNodeCommand message and dispatches it to the backend node. The
  * command is given and a \a name and some \a data which can be used in the
- * backend node to performe various operations.
+ * backend node to perform various operations.
  * This returns a CommandId which can be used to identify the initial command
  * when receiving a message in reply. If the command message is to be sent in
  * reply to another command, \a replyTo contains the id of that command.
@@ -972,7 +1069,7 @@ QNodeCommand::CommandId QNode::sendCommand(const QString &name,
 {
     Q_D(QNode);
 
-    // Bail out early if we can to avoid operator new
+    // Bail out early, if we can, to avoid operator new
     if (d->m_blockNotifications)
         return QNodeCommand::CommandId(0);
 
@@ -1039,6 +1136,75 @@ const QMetaObject *QNodePrivate::findStaticMetaObject(const QMetaObject *metaObj
     }
     Q_ASSERT(lastStaticMetaobject);
     return lastStaticMetaobject;
+}
+
+/*!
+ * \internal
+ *
+ * NodePostConstructorInit handles calling QNode::_q_postConstructorInit for
+ * all nodes. By keeping track of nodes that need initialization we can
+ * create them all together ensuring they get sent to the backend in a single
+ * batch.
+ */
+NodePostConstructorInit::NodePostConstructorInit(QObject *parent)
+    : QObject(parent)
+    , m_requestedProcessing(false)
+{
+}
+
+NodePostConstructorInit::~NodePostConstructorInit() {}
+
+/*!
+ * \internal
+ *
+ * Add a node to the list of nodes needing a call to _q_postConstructorInit
+ * We only add the node if it does not have an ancestor already in the queue
+ * because initializing the ancestor will initialize all it's children.
+ * This ensures that all backend nodes are created from the top-down, with
+ * all parents created before their children
+ *
+ */
+void NodePostConstructorInit::addNode(QNode *node)
+{
+    Q_ASSERT(node);
+    QNode *nextNode = node;
+    while (nextNode != nullptr && !m_nodesToConstruct.contains(QNodePrivate::get(nextNode)))
+        nextNode = nextNode->parentNode();
+
+    if (!nextNode) {
+        m_nodesToConstruct.append(QNodePrivate::get(node));
+        if (!m_requestedProcessing){
+            QMetaObject::invokeMethod(this, "processNodes", Qt::QueuedConnection);
+            m_requestedProcessing = true;
+        }
+    }
+}
+
+/*!
+ * \internal
+ *
+ * Remove a node from the queue. This will ensure none of its
+ * children get initialized
+ */
+void NodePostConstructorInit::removeNode(QNode *node)
+{
+    Q_ASSERT(node);
+    m_nodesToConstruct.removeAll(QNodePrivate::get(node));
+}
+
+/*!
+ * \internal
+ *
+ * call _q_postConstructorInit for all nodes in the queue
+ * and clear the queue
+ */
+void NodePostConstructorInit::processNodes()
+{
+    m_requestedProcessing = false;
+    while (!m_nodesToConstruct.empty()) {
+        auto node = m_nodesToConstruct.takeFirst();
+        node->_q_postConstructorInit();
+    }
 }
 
 } // namespace Qt3DCore

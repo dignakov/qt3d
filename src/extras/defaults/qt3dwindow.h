@@ -86,7 +86,7 @@ namespace Qt3DExtras {
 
 class Qt3DWindowPrivate;
 
-class QT3DEXTRASSHARED_EXPORT Qt3DWindow : public QWindow
+class Q_3DEXTRASSHARED_EXPORT Qt3DWindow : public QWindow
 {
     Q_OBJECT
 public:
@@ -112,6 +112,7 @@ Q_SIGNALS:
 protected:
     void showEvent(QShowEvent *e) override;
     void resizeEvent(QResizeEvent *) override;
+    bool event(QEvent *e) override;
 
 private:
     Q_DECLARE_PRIVATE(Qt3DWindow)

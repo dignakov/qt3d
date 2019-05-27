@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 namespace Qt3DCore {
 
-class QT3DCORE_PRIVATE_EXPORT QEntityPrivate : public QNodePrivate
+class Q_3DCORE_PRIVATE_EXPORT QEntityPrivate : public QNodePrivate
 {
 public :
     QEntityPrivate();
@@ -91,6 +91,7 @@ struct QEntityData
 {
     Qt3DCore::QNodeId parentEntityId;
     QVector<QNodeIdTypePair> componentIdsAndTypes;
+    Qt3DCore::QNodeIdVector childEntityIds;
 };
 
 }

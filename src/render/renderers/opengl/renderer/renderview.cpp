@@ -102,9 +102,10 @@ int LIGHT_COLOR_NAMES[MAX_LIGHTS];
 int LIGHT_INTENSITY_NAMES[MAX_LIGHTS];
 QString LIGHT_STRUCT_NAMES[MAX_LIGHTS];
 
+bool wasInitialized = false;
+
 } // anonymous namespace
 
-bool wasInitialized = false;
 RenderView::StandardUniformsNameToTypeHash RenderView::ms_standardUniformSetters;
 
 
@@ -715,6 +716,11 @@ QVector<RenderCommand *> RenderView::buildComputeRenderCommands(const QVector<En
         if ((computeJob = entity->renderComponent<ComputeCommand>()) != nullptr
                 && computeJob->isEnabled()) {
 
+            // Note: if frameCount has reached 0 in the previous frame, isEnabled
+            // would be false
+            if (computeJob->runType() == QComputeCommand::Manual)
+                computeJob->updateFrameCount();
+
             const Qt3DCore::QNodeId materialComponentId = entity->componentUuid<Material>();
             const  QVector<RenderPassParameterData> renderPassData = m_parameters.value(materialComponentId);
 
@@ -885,6 +891,7 @@ void RenderView::setShaderStorageValue(ShaderParameterPack &uniformPack,
             BlockToSSBO shaderStorageBlock;
             shaderStorageBlock.m_blockIndex = block.m_index;
             shaderStorageBlock.m_bufferID = buffer->peerId();
+            shaderStorageBlock.m_bindingIndex = block.m_binding;
             uniformPack.setShaderStorageBuffer(shaderStorageBlock);
             // Buffer update to GL buffer will be done at render time
         }
@@ -1060,6 +1067,13 @@ void RenderView::setShaderAndUniforms(RenderCommand *command,
                         setDefaultUniformBlockShaderDataValue(command->m_parameterPack, shader, shaderData, QStringLiteral("envLight"));
                         envLightCount = 1;
                     }
+                } else {
+                    // with some drivers, samplers (like the envbox sampler) need to be bound even though
+                    // they may not be actually used, otherwise draw calls can fail
+                    static const int irradianceId = StringToInt::lookupId(QLatin1String("envLight.irradiance"));
+                    static const int specularId = StringToInt::lookupId(QLatin1String("envLight.specular"));
+                    setUniformValue(command->m_parameterPack, irradianceId, m_renderer->submissionContext()->maxTextureUnitsCount());
+                    setUniformValue(command->m_parameterPack, specularId, m_renderer->submissionContext()->maxTextureUnitsCount());
                 }
                 setUniformValue(command->m_parameterPack, StringToInt::lookupId(QStringLiteral("envLightCount")), envLightCount);
             }

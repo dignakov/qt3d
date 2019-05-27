@@ -147,6 +147,26 @@ QT_BEGIN_NAMESPACE
 #define GL_READ_FRAMEBUFFER               0x8CA8
 #endif
 
+#ifndef GL_SIGNALED
+#define GL_SIGNALED                       0x9119
+#endif
+
+#ifndef GL_SYNC_STATUS
+#define GL_SYNC_STATUS                    0x9114
+#endif
+
+#ifndef GL_TIMEOUT_IGNORED
+#define GL_TIMEOUT_IGNORED                0xFFFFFFFFFFFFFFFFull
+#endif
+
+#ifndef GL_SYNC_GPU_COMMANDS_COMPLETE
+#define GL_SYNC_GPU_COMMANDS_COMPLETE     0x9117
+#endif
+
+#ifndef GL_SYNC_FLUSH_COMMANDS_BIT
+#define GL_SYNC_FLUSH_COMMANDS_BIT        0x00000001
+#endif
+
 namespace Qt3DRender {
 namespace Render {
 
@@ -234,6 +254,14 @@ void GraphicsHelperES3::vertexAttributePointer(GLenum shaderDataType,
     }
 }
 
+void GraphicsHelperES3::drawArraysInstanced(GLenum primitiveType, GLint first, GLsizei count, GLsizei instances)
+{
+    m_extraFuncs->glDrawArraysInstanced(primitiveType,
+                                        first,
+                                        count,
+                                        instances);
+}
+
 void GraphicsHelperES3::readBuffer(GLenum mode)
 {
     m_extraFuncs->glReadBuffer(mode);
@@ -299,6 +327,7 @@ bool GraphicsHelperES3::supportsFeature(GraphicsHelperInterface::Feature feature
     case BlitFramebuffer:
     case UniformBufferObject:
     case MapBuffer:
+    case Fences:
         return true;
     default:
         return false;
@@ -429,6 +458,37 @@ uint GraphicsHelperES3::uniformByteSize(const ShaderUniform &description)
     }
 
     return arrayStride ? rawByteSize * arrayStride : rawByteSize;
+}
+
+void *GraphicsHelperES3::fenceSync()
+{
+    return m_extraFuncs->glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+}
+
+void GraphicsHelperES3::clientWaitSync(void *sync, GLuint64 nanoSecTimeout)
+{
+    m_extraFuncs->glClientWaitSync(static_cast<GLsync>(sync), GL_SYNC_FLUSH_COMMANDS_BIT, nanoSecTimeout);
+}
+
+void GraphicsHelperES3::waitSync(void *sync)
+{
+    m_extraFuncs->glWaitSync(static_cast<GLsync>(sync), 0, GL_TIMEOUT_IGNORED);
+}
+
+bool GraphicsHelperES3::wasSyncSignaled(void *sync)
+{
+    GLint v;
+    m_extraFuncs->glGetSynciv(static_cast<GLsync>(sync),
+                         GL_SYNC_STATUS,
+                         sizeof(v),
+                         nullptr,
+                         &v);
+    return v == GL_SIGNALED;
+}
+
+void GraphicsHelperES3::deleteSync(void *sync)
+{
+    m_extraFuncs->glDeleteSync(static_cast<GLsync>(sync));
 }
 
 void GraphicsHelperES3::blitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter)

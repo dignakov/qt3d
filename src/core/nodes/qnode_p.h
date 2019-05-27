@@ -60,6 +60,7 @@
 #include <Qt3DCore/private/qobservableinterface_p.h>
 #include <Qt3DCore/private/qt3dcore_global_p.h>
 #include <QtCore/private/qobject_p.h>
+#include <QQueue>
 
 QT_BEGIN_NAMESPACE
 
@@ -68,7 +69,7 @@ namespace Qt3DCore {
 class QNode;
 class QAspectEngine;
 
-class QT3DCORE_PRIVATE_EXPORT QNodePrivate : public QObjectPrivate, public QObservableInterface
+class Q_3DCORE_PRIVATE_EXPORT QNodePrivate : public QObjectPrivate, public QObservableInterface
 {
 public:
     QNodePrivate();
@@ -152,6 +153,7 @@ public:
     static const QMetaObject *findStaticMetaObject(const QMetaObject *metaObject);
 
     void _q_postConstructorInit();
+    void _q_ensureBackendNodeCreated();
 
 private:
     void notifyCreationChange();
@@ -171,6 +173,23 @@ private:
     bool m_propertyChangesSetup;
     PropertyChangeHandler<QNodePrivate> m_signals;
     QHash<QNode *, QMetaObject::Connection> m_destructionConnections;
+};
+
+class NodePostConstructorInit : public QObject
+{
+    Q_OBJECT
+public:
+    NodePostConstructorInit(QObject *parent = nullptr);
+    virtual ~NodePostConstructorInit();
+    void removeNode(QNode *node);
+    void addNode(QNode *node);
+
+private Q_SLOTS:
+    void processNodes();
+
+private:
+    QQueue<QNodePrivate *> m_nodesToConstruct;
+    bool m_requestedProcessing;
 };
 
 } // namespace Qt3DCore

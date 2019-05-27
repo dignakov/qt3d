@@ -72,11 +72,34 @@ private:
     void checkPropertyMirroring();
 
 private slots:
+    void checkDefaults();
     void checkFrontendPropertyNotifications();
     void checkPropertyMirroring();
     void checkPropertyChanges();
     void checkTextureImageBookeeping();
 };
+
+void tst_RenderTexture::checkDefaults()
+{
+    Qt3DRender::Render::Texture backend;
+
+    QCOMPARE(backend.properties().format, Qt3DRender::QAbstractTexture::NoFormat);
+    QCOMPARE(backend.properties().width, 1);
+    QCOMPARE(backend.properties().height, 1);
+    QCOMPARE(backend.properties().depth, 1);
+    QCOMPARE(backend.properties().layers, 1);
+    QCOMPARE(backend.properties().mipLevels, 1);
+    QCOMPARE(backend.properties().samples, 1);
+    QCOMPARE(backend.properties().generateMipMaps, false);
+    QCOMPARE(backend.parameters().magnificationFilter, Qt3DRender::QAbstractTexture::Nearest);
+    QCOMPARE(backend.parameters().minificationFilter, Qt3DRender::QAbstractTexture::Nearest);
+    QCOMPARE(backend.parameters().wrapModeX, Qt3DRender::QTextureWrapMode::ClampToEdge);
+    QCOMPARE(backend.parameters().wrapModeY, Qt3DRender::QTextureWrapMode::ClampToEdge);
+    QCOMPARE(backend.parameters().wrapModeZ, Qt3DRender::QTextureWrapMode::ClampToEdge);
+    QCOMPARE(backend.parameters().maximumAnisotropy, 1.0f);
+    QCOMPARE(backend.parameters().comparisonFunction, Qt3DRender::QAbstractTexture::CompareLessEqual);
+    QCOMPARE(backend.parameters().comparisonMode, Qt3DRender::QAbstractTexture::CompareNone);
+}
 
 void tst_RenderTexture::checkFrontendPropertyNotifications()
 {
@@ -479,6 +502,19 @@ void tst_RenderTexture::checkPropertyChanges()
     QCOMPARE(backend.dataGenerator(), gen);
     QVERIFY(renderer.dirtyBits() & Qt3DRender::Render::AbstractRenderer::TexturesDirty);
     QVERIFY(backend.dirtyFlags() == Qt3DRender::Render::Texture::DirtyDataGenerator);
+    renderer.clearDirtyBits(Qt3DRender::Render::AbstractRenderer::AllDirty);
+    backend.unsetDirty();
+
+    // WHEN
+    updateChange = QSharedPointer<Qt3DCore::QPropertyUpdatedChange>::create(Qt3DCore::QNodeId());
+    updateChange->setValue(883);
+    updateChange->setPropertyName("textureId");
+    backend.sceneChangeEvent(updateChange);
+
+    // THEN
+    QCOMPARE(backend.sharedTextureId(), 883);
+    QVERIFY(renderer.dirtyBits() & Qt3DRender::Render::AbstractRenderer::TexturesDirty);
+    QVERIFY(backend.dirtyFlags() == Qt3DRender::Render::Texture::DirtySharedTextureId);
     renderer.clearDirtyBits(Qt3DRender::Render::AbstractRenderer::AllDirty);
     backend.unsetDirty();
 

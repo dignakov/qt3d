@@ -47,6 +47,7 @@
 #include <Qt3DRender/private/qrenderaspect_p.h>
 #include <Qt3DRender/private/pickboundingvolumejob_p.h>
 #include <Qt3DRender/private/pickboundingvolumeutils_p.h>
+#include <Qt3DRender/private/updateentityhierarchyjob_p.h>
 #include <Qt3DRender/private/updatemeshtrianglelistjob_p.h>
 #include <Qt3DRender/private/updateworldboundingvolumejob_p.h>
 #include <Qt3DRender/private/updateworldtransformjob_p.h>
@@ -107,6 +108,10 @@ namespace {
 
 void runRequiredJobs(Qt3DRender::TestAspect *test)
 {
+    Qt3DRender::Render::UpdateEntityHierarchyJob updateEntitiesJob;
+    updateEntitiesJob.setManager(test->nodeManagers());
+    updateEntitiesJob.run();
+
     Qt3DRender::Render::UpdateWorldTransformJob updateWorldTransform;
     updateWorldTransform.setRoot(test->sceneRoot());
     updateWorldTransform.run();
@@ -242,36 +247,6 @@ private Q_SLOTS:
         QCOMPARE(vca.area, QSize(600, 600));
         QCOMPARE(vca.cameraId, camera->id());
         QCOMPARE(vca.viewport, QRectF(0.0f, 0.0f, 1.0f, 1.0f));
-    }
-
-    void entityGatherer()
-    {
-        // GIVEN
-        QmlSceneReader sceneReader(QUrl("qrc:/testscene_dragenabled.qml"));
-        QScopedPointer<Qt3DCore::QNode> root(qobject_cast<Qt3DCore::QNode *>(sceneReader.root()));
-        QVERIFY(root);
-        QScopedPointer<Qt3DRender::TestAspect> test(new Qt3DRender::TestAspect(root.data()));
-
-        // THEN
-        QList<Qt3DCore::QEntity *> frontendEntities;
-        frontendEntities << qobject_cast<Qt3DCore::QEntity *>(root.data()) << root->findChildren<Qt3DCore::QEntity *>();
-        QCOMPARE(frontendEntities.size(), 4);
-
-        // WHEN
-        Qt3DRender::Render::PickingUtils::EntityGatherer gatherer(test->nodeManagers()->lookupResource<Qt3DRender::Render::Entity, Qt3DRender::Render::EntityManager>(root->id()));
-        QVector<Qt3DRender::Render::Entity *> entities = gatherer.entities();
-
-        // THEN
-        QCOMPARE(frontendEntities.size(), entities.size());
-
-        std::sort(frontendEntities.begin(), frontendEntities.end(),
-                  [] (Qt3DCore::QEntity *a, Qt3DCore::QEntity *b) { return a->id() > b->id(); });
-
-        std::sort(entities.begin(), entities.end(),
-                  [] (Qt3DRender::Render::Entity *a, Qt3DRender::Render::Entity *b) { return a->peerId() > b->peerId(); });
-
-        for (int i = 0, e = frontendEntities.size(); i < e; ++i)
-            QCOMPARE(frontendEntities.at(i)->id(), entities.at(i)->peerId());
     }
 
     void checkCurrentPickerChange_data()
@@ -861,6 +836,94 @@ private Q_SLOTS:
         arbiter.events.clear();
     }
 
+    void checkDispatchReleaseEventOnLastPickerWhenMovingOutOfViewport()
+    {
+        // GIVEN
+        QmlSceneReader sceneReader(QUrl("qrc:/testscene_dragenabled.qml"));
+        QScopedPointer<Qt3DCore::QNode> root(qobject_cast<Qt3DCore::QNode *>(sceneReader.root()));
+        QVERIFY(root);
+
+        QList<Qt3DRender::QRenderSettings *> renderSettings = root->findChildren<Qt3DRender::QRenderSettings *>();
+        QCOMPARE(renderSettings.size(), 1);
+        Qt3DRender::QPickingSettings *settings = renderSettings.first()->pickingSettings();
+
+        settings->setPickMethod(Qt3DRender::QPickingSettings::TrianglePicking);
+        settings->setPickResultMode(Qt3DRender::QPickingSettings::NearestPick);
+        settings->setFaceOrientationPickingMode(Qt3DRender::QPickingSettings::FrontAndBackFace);
+
+        QScopedPointer<Qt3DRender::TestAspect> test(new Qt3DRender::TestAspect(root.data()));
+        TestArbiter arbiter;
+
+        // Runs Required jobs
+        runRequiredJobs(test.data());
+
+        // THEN
+        QList<Qt3DRender::QObjectPicker *> pickers = root->findChildren<Qt3DRender::QObjectPicker *>();
+        QCOMPARE(pickers.size(), 2);
+
+        Qt3DRender::QObjectPicker *picker1 = nullptr;
+        if (pickers.first()->objectName() == QLatin1String("Picker1"))
+            picker1 = pickers.first();
+        else
+            picker1 = pickers.last();
+
+        Qt3DRender::Render::ObjectPicker *backendPicker1 = test->nodeManagers()->objectPickerManager()->lookupResource(picker1->id());
+        QVERIFY(backendPicker1);
+        Qt3DCore::QBackendNodePrivate::get(backendPicker1)->setArbiter(&arbiter);
+
+        // WHEN -> Pressed on object
+        Qt3DRender::Render::PickBoundingVolumeJob pickBVJob;
+        initializePickBoundingVolumeJob(&pickBVJob, test.data());
+
+        QList<QPair<QObject *, QMouseEvent>> events;
+        events.push_back({nullptr, QMouseEvent(QMouseEvent::MouseButtonPress, QPointF(207.0f, 303.0f),
+                                               Qt::LeftButton, Qt::LeftButton, Qt::NoModifier)});
+        pickBVJob.setMouseEvents(events);
+        bool earlyReturn = !pickBVJob.runHelper();
+
+        // THEN -> Pressed
+        QVERIFY(!earlyReturn);
+        QVERIFY(backendPicker1->isPressed());
+        QCOMPARE(arbiter.events.count(), 1);
+        Qt3DCore::QPropertyUpdatedChangePtr change = arbiter.events.first().staticCast<Qt3DCore::QPropertyUpdatedChange>();
+        QCOMPARE(change->propertyName(), "pressed");
+        Qt3DRender::QPickEventPtr pickEvent = change->value().value<Qt3DRender::QPickEventPtr>();
+        QVERIFY(pickEvent);
+        QVERIFY(!Qt3DRender::QPickEventPrivate::get(pickEvent.data())->m_entity.isNull());
+        QVERIFY(pickEvent.dynamicCast<Qt3DRender::QPickTriangleEvent>());
+
+        arbiter.events.clear();
+
+        // WHEN -> Releasing out of the viewport
+        events.clear();
+        events.push_back({nullptr, QMouseEvent(QMouseEvent::MouseButtonRelease, QPointF(10000.0f, 10000.0f),
+                                               Qt::LeftButton, Qt::LeftButton, Qt::NoModifier)});
+        pickBVJob.setMouseEvents(events);
+        earlyReturn = !pickBVJob.runHelper();
+
+        // THEN -> Should have received released event
+        QVERIFY(!earlyReturn);
+        QVERIFY(!backendPicker1->isPressed());
+        QCOMPARE(arbiter.events.count(), 1);
+        change = arbiter.events.first().staticCast<Qt3DCore::QPropertyUpdatedChange>();
+        QCOMPARE(change->propertyName(), "released");
+        pickEvent = change->value().value<Qt3DRender::QPickEventPtr>();
+        QVERIFY(pickEvent);
+        QVERIFY(Qt3DRender::QPickEventPrivate::get(pickEvent.data())->m_entity.isNull());
+
+        arbiter.events.clear();
+
+        // WHEN -> Releasing out of the viewport
+        events.clear();
+        events.push_back({nullptr, QMouseEvent(QMouseEvent::MouseButtonRelease, QPointF(10000.0f, 10000.0f),
+                                               Qt::LeftButton, Qt::LeftButton, Qt::NoModifier)});
+        pickBVJob.setMouseEvents(events);
+        earlyReturn = !pickBVJob.runHelper();
+
+        // THEN -> Should have received nothing
+        QCOMPARE(arbiter.events.count(), 0);
+    }
+
     void checkDispatchHoverEvent_data()
     {
         generateAllPickingSettingsCombinations();
@@ -1383,6 +1446,111 @@ private Q_SLOTS:
         QVERIFY(pickEvent);
 
         arbiter.events.clear();
+    }
+
+    void checkPriorityPicking()
+    {
+        // GIVEN
+        QmlSceneReader sceneReader(QUrl("qrc:/testscene_priorityoverlapping.qml"));
+        QScopedPointer<Qt3DCore::QNode> root(qobject_cast<Qt3DCore::QNode *>(sceneReader.root()));
+        QVERIFY(root);
+
+        QScopedPointer<Qt3DRender::TestAspect> test(new Qt3DRender::TestAspect(root.data()));
+        TestArbiter arbiter1;
+        TestArbiter arbiter2;
+
+        // Runs Required jobs
+        runRequiredJobs(test.data());
+
+        // THEN
+        QList<Qt3DRender::QObjectPicker *> pickers = root->findChildren<Qt3DRender::QObjectPicker *>();
+        QCOMPARE(pickers.size(), 2);
+
+        Qt3DRender::QObjectPicker *picker1 = nullptr;
+        Qt3DRender::QObjectPicker *picker2 = nullptr;
+        if (pickers.first()->objectName() == QLatin1String("Picker1")) {
+            picker1 = pickers.first();
+            picker2 = pickers.last();
+        } else {
+            picker1 = pickers.last();
+            picker2 = pickers.first();
+        }
+
+        Qt3DRender::Render::ObjectPicker *backendPicker1 = test->nodeManagers()->objectPickerManager()->lookupResource(picker1->id());
+        QVERIFY(backendPicker1);
+        Qt3DCore::QBackendNodePrivate::get(backendPicker1)->setArbiter(&arbiter1);
+
+        Qt3DRender::Render::ObjectPicker *backendPicker2 = test->nodeManagers()->objectPickerManager()->lookupResource(picker2->id());
+        QVERIFY(backendPicker2);
+        Qt3DCore::QBackendNodePrivate::get(backendPicker2)->setArbiter(&arbiter2);
+
+
+        // WHEN both have priority == 0, select closest
+        {
+            Qt3DRender::Render::PickBoundingVolumeJob pickBVJob;
+            initializePickBoundingVolumeJob(&pickBVJob, test.data());
+
+            // WHEN -> Pressed on object
+            QList<QPair<QObject *, QMouseEvent>> events;
+            events.push_back({nullptr, QMouseEvent(QMouseEvent::MouseButtonPress, QPointF(300.0f, 300.0f),
+                                                   Qt::LeftButton, Qt::LeftButton, Qt::NoModifier)});
+            pickBVJob.setMouseEvents(events);
+            bool earlyReturn = !pickBVJob.runHelper();
+
+            // THEN -> Select picker with highest priority
+            QVERIFY(!earlyReturn);
+            QVERIFY(backendPicker1->isPressed());
+            Qt3DCore::QPropertyUpdatedChangePtr change = arbiter1.events.first().staticCast<Qt3DCore::QPropertyUpdatedChange>();
+            QCOMPARE(change->propertyName(), "pressed");
+
+            QVERIFY(!backendPicker2->isPressed());
+            QVERIFY(arbiter2.events.isEmpty());
+
+            events.push_back({nullptr, QMouseEvent(QMouseEvent::MouseButtonRelease, QPointF(300.0f, 300.0f),
+                                                   Qt::LeftButton, Qt::LeftButton, Qt::NoModifier)});
+            pickBVJob.setMouseEvents(events);
+            pickBVJob.runHelper();
+            arbiter1.events.clear();
+            arbiter2.events.clear();
+
+            QVERIFY(!backendPicker1->isPressed());
+            QVERIFY(!backendPicker2->isPressed());
+        }
+
+        // WHEN furthest one has higher priority, select furthest one
+        {
+            backendPicker2->setPriority(1000);
+            QCOMPARE(backendPicker2->priority(), 1000);
+
+            Qt3DRender::Render::PickBoundingVolumeJob pickBVJob;
+            initializePickBoundingVolumeJob(&pickBVJob, test.data());
+
+            // WHEN -> Pressed on object
+            QList<QPair<QObject *, QMouseEvent>> events;
+            events.push_back({nullptr, QMouseEvent(QMouseEvent::MouseButtonPress, QPointF(300.0f, 300.0f),
+                                                   Qt::LeftButton, Qt::LeftButton, Qt::NoModifier)});
+            pickBVJob.setMouseEvents(events);
+            bool earlyReturn = !pickBVJob.runHelper();
+
+            // THEN -> Select picker with highest priority
+            QVERIFY(!earlyReturn);
+            QVERIFY(backendPicker2->isPressed());
+            Qt3DCore::QPropertyUpdatedChangePtr change = arbiter2.events.first().staticCast<Qt3DCore::QPropertyUpdatedChange>();
+            QCOMPARE(change->propertyName(), "pressed");
+
+            QVERIFY(!backendPicker1->isPressed());
+            QVERIFY(arbiter1.events.isEmpty());
+
+            events.push_back({nullptr, QMouseEvent(QMouseEvent::MouseButtonRelease, QPointF(300.0f, 300.0f),
+                                                   Qt::LeftButton, Qt::LeftButton, Qt::NoModifier)});
+            pickBVJob.setMouseEvents(events);
+            pickBVJob.runHelper();
+            arbiter1.events.clear();
+            arbiter2.events.clear();
+
+            QVERIFY(!backendPicker1->isPressed());
+            QVERIFY(!backendPicker2->isPressed());
+        }
     }
 
 };
